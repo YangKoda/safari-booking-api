@@ -143,28 +143,63 @@ export class Inquiry {
     this.updatedAt = new Date();
   }
 
-  updateParticipants(newCount: number): void {
-    if (newCount <= 0) {
-      throw new ValidationError('Invalid participant count', {
-        participants: ['Number of participants must be greater than 0'],
+updateBookingDetails(updates: {
+    participants?: number;
+    preferredDateRange?: DateRange;
+    specialRequests?: string;
+    rescheduleReason?: string;
+  }): void {
+    // Check if booking can be modified
+    if (this.status === 'completed') {
+      throw new ValidationError('Cannot update completed inquiries', {
+        status: ['Completed inquiries cannot be modified'],
       });
     }
-    if (this.status !== 'pending') {
-      throw new ValidationError('Cannot update confirmed or cancelled inquiries', {
-        status: ['Only pending inquiries can be updated'],
+    if (this.status === 'cancelled') {
+      throw new ValidationError('Cannot update cancelled inquiries', {
+        status: ['Cancelled inquiries cannot be modified'],
       });
     }
-    this.participants = newCount;
-    this.updatedAt = new Date();
-  }
 
-  updateSpecialRequests(requests: string): void {
-    if (this.status !== 'pending') {
-      throw new ValidationError('Cannot update confirmed or cancelled inquiries', {
-        status: ['Only pending inquiries can be updated'],
-      });
+    // Validate participants if provided
+    if (updates.participants !== undefined) {
+      if (updates.participants <= 0) {
+        throw new ValidationError('Invalid participant count', {
+          participants: ['Number of participants must be greater than 0'],
+        });
+      }
+      this.participants = updates.participants;
     }
-    this.specialRequests = requests;
+
+    // Validate and update date range if provided
+    if (updates.preferredDateRange) {
+      if (updates.preferredDateRange.isInPast()) {
+        throw new ValidationError('Cannot update to past dates', {
+          dateRange: ['Cannot book tours in the past'],
+        });
+      }
+
+      // If booking was CONFIRMED and dates are changing, reset to PENDING for re-approval
+      if (this.status === 'confirmed' && !this.preferredDateRange.equals(updates.preferredDateRange)) {
+        this.status = 'pending';
+
+        // Add reschedule note to special requests
+        if (updates.rescheduleReason) {
+          const rescheduleNote = `\n[RESCHEDULE REQUEST: ${updates.rescheduleReason}]`;
+          this.specialRequests = this.specialRequests
+            ? this.specialRequests + rescheduleNote
+            : rescheduleNote;
+        }
+      }
+
+      this.preferredDateRange = updates.preferredDateRange;
+    }
+
+    // Update special requests if provided
+    if (updates.specialRequests !== undefined) {
+      this.specialRequests = updates.specialRequests;
+    }
+
     this.updatedAt = new Date();
   }
 
@@ -182,5 +217,8 @@ export class Inquiry {
 
   isCompleted(): boolean {
     return this.status === 'completed';
+  }
+  canBeModified(): boolean {
+    return this.status === 'pending' || this.status === 'confirmed';
   }
 }
