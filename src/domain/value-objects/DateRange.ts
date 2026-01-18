@@ -66,8 +66,8 @@ export class DateRange {
 
   equals(other: DateRange): boolean {
     return (
-      this.startDate.getTime() === other.startDate.getTime() &&
-      this.endDate.getTime() === other.endDate.getTime()
+      this.startDate.getTime() === other.getStartDate().getTime() &&
+      this.endDate.getTime() === other.getEndDate().getTime()
     );
   }
 
