@@ -138,6 +138,13 @@ export class Tour {
     return this.duration;
   }
 
+  getMaxCapacity(): number {
+    return this.maxGroupSize;
+  }
+
+
+
+
   getMaxGroupSize(): number {
     return this.maxGroupSize;
   }
