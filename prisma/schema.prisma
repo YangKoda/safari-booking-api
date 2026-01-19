@@ -14,39 +14,39 @@ datasource db {
 // =====================================================
 
 model Tour {
-  id              String    @id @default(uuid())
-  name            String
-  description     String    @db.Text
-  duration        Int       // days
-  maxGroupSize    Int
-  difficulty      Difficulty
-  priceAmount     Decimal   @db.Decimal(10, 2)
-  priceCurrency   String    @default("USD")
-  summary         String    @db.Text
-  imageCover      String
-  images          String[]
-  startDates      DateTime[]
+  id            String     @id @default(uuid())
+  name          String
+  description   String     @db.Text
+  duration      Int // days
+  maxGroupSize  Int
+  difficulty    Difficulty
+  priceAmount   Decimal    @db.Decimal(10, 2)
+  priceCurrency String     @default("USD")
+  summary       String     @db.Text
+  imageCover    String
+  images        String[]
+  startDates    DateTime[]
 
   // Start Location (embedded JSON)
-  startLocation   Json      // { description, coordinates, address }
+  startLocation Json // { description, coordinates, address }
 
   // Multiple Locations (array of JSON)
-  locations       Json[]    // [{ description, coordinates, day }]
+  locations Json[] // [{ description, coordinates, day }]
 
   // Guides (User IDs)
-  guides          String[]
+  guides String[]
 
   // Ratings
-  ratingsAverage  Float     @default(0)
-  ratingsQuantity Int       @default(0)
+  ratingsAverage  Float @default(0)
+  ratingsQuantity Int   @default(0)
 
   // Timestamps
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  inquiries       Inquiry[]
-  reviews         Review[]
+  inquiries Inquiry[]
+  reviews   Review[]
 
   @@index([difficulty])
   @@index([priceAmount])
@@ -55,18 +55,18 @@ model Tour {
 }
 
 model User {
-  id              String    @id @default(uuid())
-  name            String
-  email           String    @unique
-  role            Role      @default(CUSTOMER)
+  id    String @id @default(uuid())
+  name  String
+  email String @unique
+  role  Role   @default(CUSTOMER)
 
   // Timestamps
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  inquiries       Inquiry[]
-  reviews         Review[]
+  inquiries Inquiry[]
+  reviews   Review[]
 
   @@index([email])
   @@index([role])
@@ -74,28 +74,28 @@ model User {
 }
 
 model Inquiry {
-  id                  String        @id @default(uuid())
+  id String @id @default(uuid())
 
   // Foreign Keys
-  tourId              String
-  userId              String
+  tourId String
+  userId String
 
   // Booking Details
-  participants        Int
-  startDate           DateTime
-  endDate             DateTime
-  specialRequests     String?       @db.Text
+  participants    Int
+  startDate       DateTime
+  endDate         DateTime
+  specialRequests String?  @db.Text
 
   // Status
-  status              InquiryStatus @default(PENDING)
+  status InquiryStatus @default(PENDING)
 
   // Timestamps
-  createdAt           DateTime      @default(now())
-  updatedAt           DateTime      @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  tour                Tour          @relation(fields: [tourId], references: [id], onDelete: Cascade)
-  user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tour Tour @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([tourId])
   @@index([userId])
@@ -106,23 +106,23 @@ model Inquiry {
 }
 
 model Review {
-  id              String    @id @default(uuid())
+  id String @id @default(uuid())
 
   // Foreign Keys
-  tourId          String
-  userId          String
+  tourId String
+  userId String
 
   // Review Content
-  rating          Int       // 1-5
-  comment         String    @db.Text
+  rating  Int // 1-5
+  comment String @db.Text
 
   // Timestamps
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  tour            Tour      @relation(fields: [tourId], references: [id], onDelete: Cascade)
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tour Tour @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([tourId, userId]) // One review per user per tour
   @@index([tourId])
