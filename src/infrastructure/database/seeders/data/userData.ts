@@ -6,6 +6,7 @@ export interface UserSeedData {
   email: string;
   role: UserRole;
   password: string; // Plain text - will be hashed by seeder
+  phone?: string;
   photo?: string;
   active: boolean;
 }
