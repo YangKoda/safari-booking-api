@@ -1,0 +1,238 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum Currency {
+  USD
+  EUR
+  GBP
+  KES
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  DIFFICULT
+}
+
+enum UserRole {
+  USER
+  GUIDE
+  LEAD_GUIDE
+  ADMIN
+}
+
+enum InquiryStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+// ============================================
+// TOUR MODEL (Complete & Professional)
+// ============================================
+
+model Tour {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  slug            String   @unique
+  description     String   @db.Text
+  summary         String   @db.Text
+
+  // Tour Details
+  duration        Int
+  maxGroupSize    Int
+  difficulty      Difficulty
+
+  // Pricing
+  priceAmount     Decimal  @db.Decimal(10, 2)
+  currency        Currency @default(USD)
+
+  // Images
+  imageCover      String
+  images          String[]
+
+  // Dates
+  startDates      DateTime[]
+
+  // Ratings (calculated from reviews)
+  ratingsAverage  Float    @default(0)
+  ratingsQuantity Int      @default(0)
+
+  // Timestamps
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // ============================================
+  // RELATIONS
+  // ============================================
+
+  // Location Relations (One-to-Many)
+  startLocation   TourLocation? @relation("StartLocation")
+  locations       TourLocation[] @relation("TourLocations")
+
+  // Guide Relations (Many-to-Many through join table)
+  tourGuides      TourGuide[]
+
+  // Reviews (One-to-Many)
+  reviews         Review[]
+
+  // Inquiries (One-to-Many)
+  inquiries       Inquiry[]
+
+  @@index([difficulty])
+  @@index([priceAmount])
+  @@index([ratingsAverage])
+  @@map("tours")
+}
+
+// ============================================
+// TOUR LOCATION MODEL (Separate Table)
+// ============================================
+
+model TourLocation {
+  id          String   @id @default(uuid())
+  description String
+  address     String?
+  longitude   Float
+  latitude    Float
+  day         Int?     // null for startLocation, set for tour stops
+
+  // Relations
+  tourId      String
+  tour        Tour     @relation("TourLocations", fields: [tourId], references: [id], onDelete: Cascade)
+
+  // For start location (One-to-One)
+  startTourId String?  @unique
+  startTour   Tour?    @relation("StartLocation", fields: [startTourId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+
+  @@index([tourId])
+  @@map("tour_locations")
+}
+
+// ============================================
+// TOUR-GUIDE JOIN TABLE (Many-to-Many)
+// ============================================
+
+model TourGuide {
+  id        String   @id @default(uuid())
+
+  tourId    String
+  tour      Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  isLeadGuide Boolean @default(false)
+  assignedAt  DateTime @default(now())
+
+  @@unique([tourId, userId])
+  @@index([tourId])
+  @@index([userId])
+  @@map("tour_guides")
+}
+
+// ============================================
+// USER MODEL (Complete)
+// ============================================
+
+model User {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  phone             String?
+  role          UserRole @default(USER)
+  password      String   // Will be hashed
+  photo         String?
+  active        Boolean  @default(true)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  tourGuides    TourGuide[]
+  reviews       Review[]
+  inquiries     Inquiry[]
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+// ============================================
+// INQUIRY MODEL (Complete)
+// ============================================
+
+model Inquiry {
+  id            String        @id @default(uuid())
+
+  // Customer Info
+  customerName  String
+  customerEmail String
+  phone         String?
+  numberOfPeople Int
+
+  // Tour Info
+  tourId        String
+  tour          Tour          @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  userId        String?
+  user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Booking Details
+  preferredDate DateTime
+  status        InquiryStatus @default(PENDING)
+  totalPrice    Decimal       @db.Decimal(10, 2)
+  currency      Currency      @default(USD)
+
+  // Additional Info
+  specialRequests String?     @db.Text
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([tourId])
+  @@index([userId])
+  @@index([status])
+  @@index([preferredDate])
+  @@map("inquiries")
+}
+
+// ============================================
+// REVIEW MODEL (Complete)
+// ============================================
+
+model Review {
+  id        String   @id @default(uuid())
+
+  rating    Int      // 1-5 stars
+  comment   String   @db.Text
+
+  // Relations
+  tourId    String
+  tour      Tour     @relation(fields: [tourId], references: [id], onDelete: Cascade)
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tourId, userId]) // One review per user per tour
+  @@index([tourId])
+  @@index([userId])
+  @@index([rating])
+  @@map("reviews")
+}
