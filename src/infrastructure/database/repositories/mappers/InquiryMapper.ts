@@ -6,8 +6,6 @@ import { Prisma } from '@prisma/client';
 
 export class InquiryMapper {
   static toDomain(prisma: PrismaInquiry): Inquiry {
-    const endDate = new Date(prisma.preferredDate);
-    endDate.setDate(endDate.getDate() + 7);
 
     const inquiryProps: InquiryProps = {
       id: prisma.id,
@@ -17,7 +15,12 @@ export class InquiryMapper {
       customerEmail: prisma.customerEmail,
       customerPhone: prisma.phone || '',
       participants: prisma.numberOfPeople,
-      preferredDateRange: new DateRange(prisma.preferredDate, endDate),
+
+      preferredDateRange: new DateRange(
+        new Date(prisma.preferredStartDate),
+        new Date(prisma.preferredEndDate)
+      ),
+
       totalPrice: new Money(Number(prisma.totalPrice), prisma.currency),
       specialRequests: prisma.specialRequests || undefined,
       status: this.mapStatusToDomain(prisma.status),
@@ -40,7 +43,10 @@ export class InquiryMapper {
       customerEmail: inquiry.getCustomerEmail(),
       phone: inquiry.getCustomerPhone() || null,
       numberOfPeople: inquiry.getParticipants(),
-      preferredDate: inquiry.getPreferredDateRange().getStartDate(),
+
+      preferredStartDate: inquiry.getPreferredDateRange().getStartDate(),
+      preferredEndDate: inquiry.getPreferredDateRange().getEndDate(),
+
       status: this.mapStatusToPrisma(inquiry.getStatus()),
       totalPrice: new Prisma.Decimal(inquiry.getTotalPrice().getAmount()),
       currency: inquiry.getTotalPrice().getCurrency(),

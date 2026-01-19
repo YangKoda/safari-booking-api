@@ -192,7 +192,8 @@ model Inquiry {
   user          User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   // Booking Details
-  preferredDate DateTime
+  preferredStartDate DateTime
+  preferredEndDate   DateTime
   status        InquiryStatus @default(PENDING)
   totalPrice    Decimal       @db.Decimal(10, 2)
   currency      Currency      @default(USD)
@@ -206,7 +207,8 @@ model Inquiry {
   @@index([tourId])
   @@index([userId])
   @@index([status])
-  @@index([preferredDate])
+  @@index([preferredStartDate])
+  @@index([preferredEndDate])
   @@map("inquiries")
 }
 
