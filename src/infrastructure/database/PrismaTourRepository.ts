@@ -223,6 +223,7 @@ export class PrismaTourRepository implements ITourRepository {
     return new Tour({
       id: raw.id,
       name: raw.name,
+      slug: raw.slug,
       description: raw.description,
       summary: raw.summary,
       duration: raw.duration,
@@ -235,11 +236,10 @@ export class PrismaTourRepository implements ITourRepository {
       startLocation: raw.startLocation ? {
         description: raw.startLocation.description,
         coordinates: [raw.startLocation.longitude, raw.startLocation.latitude],
-        address: raw.startLocation.address || '',
+
       } : {
         description: 'Default Location',
         coordinates: [0, 0],
-        address: '',
       },
       locations: raw.locations?.map((loc: any) => ({
         description: loc.description,
@@ -279,7 +279,6 @@ export class PrismaTourRepository implements ITourRepository {
       },
       startLocation: startLocation ? {
         description: startLocation.description,
-        address: startLocation.address,
         longitude: startLocation.coordinates[0],
         latitude: startLocation.coordinates[1],
       } : null,

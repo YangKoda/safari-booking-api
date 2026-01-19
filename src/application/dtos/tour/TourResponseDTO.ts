@@ -16,7 +16,6 @@ export interface TourResponseDTO {
   startLocation: {
     description: string;
     coordinates: [number, number];
-    address: string;
   };
   locations: Array<{
     description: string;

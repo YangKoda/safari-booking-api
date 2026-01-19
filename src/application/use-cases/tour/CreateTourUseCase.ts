@@ -21,6 +21,7 @@ export class CreateTourUseCase {
 
     const tour = new Tour({
       name: dto.name,
+      slug: this.generateSlug(dto.name),
       description: dto.description,
       duration: dto.duration,
       maxGroupSize: dto.maxGroupSize,
@@ -67,4 +68,12 @@ export class CreateTourUseCase {
       updatedAt: tour.getUpdatedAt().toISOString(),
     };
   }
+
+private generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
 }
