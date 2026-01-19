@@ -1,4 +1,5 @@
 import { Inquiry } from '@domain/entities/Inquiry';
+import { Money } from '@domain/value-objects/Money';
 import { DateRange } from '@domain/value-objects/DateRange';
 import { IInquiryRepository } from '@domain/repositories/IInquiryRepository';
 import { ITourRepository } from '@domain/repositories/ITourRepository';
@@ -47,14 +48,22 @@ CreateInquiryDTOValidator.validate(dto);
     const dateRange = new DateRange(startDate, endDate);
 
     // 6. Create Inquiry entity
-    const inquiry = new Inquiry({
-      tourId: dto.tourId,
-      userId: dto.userId,
-      participants: dto.participants,
-      preferredDateRange: dateRange,
-      specialRequests: dto.specialRequests,
-      status: 'pending', // All new inquiries start as pending
-    });
+  const inquiry = new Inquiry({
+  tourId: dto.tourId,
+  userId: dto.userId,
+
+  customerName: user.getName(),
+  customerEmail: String(user.getEmail()),
+  customerPhone: user.getPhone() ?? 'N/A',
+
+  participants: dto.participants,
+  preferredDateRange: dateRange,
+
+  totalPrice: tour.getPrice().multiply(dto.participants),
+
+  specialRequests: dto.specialRequests,
+  status: 'pending', // All new inquiries start as pending
+});
 
     // 7. Save to repository
     const savedInquiry = await this.inquiryRepository.save(inquiry);

@@ -1,7 +1,14 @@
+import { DateRange } from "@domain/value-objects/DateRange";
+
 export interface CreateInquiryDTO {
   tourId: string;
   userId: string;
+  // Customer snapshot (REQUIRED by InquiryProps)
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
   participants: number;
+  preferredDateRange: DateRange;
   startDate: string; // ISO 8601 format: "2026-03-15"
   endDate: string;   // ISO 8601 format: "2026-03-20"
   specialRequests?: string;
