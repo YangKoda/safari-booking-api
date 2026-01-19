@@ -1,14 +1,155 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+// =====================================================
+// MODELS (Database Tables)
+// =====================================================
+
+model Tour {
+  id              String    @id @default(uuid())
+  name            String
+  description     String    @db.Text
+  duration        Int       // days
+  maxGroupSize    Int
+  difficulty      Difficulty
+  priceAmount     Decimal   @db.Decimal(10, 2)
+  priceCurrency   String    @default("USD")
+  summary         String    @db.Text
+  imageCover      String
+  images          String[]
+  startDates      DateTime[]
+
+  // Start Location (embedded JSON)
+  startLocation   Json      // { description, coordinates, address }
+
+  // Multiple Locations (array of JSON)
+  locations       Json[]    // [{ description, coordinates, day }]
+
+  // Guides (User IDs)
+  guides          String[]
+
+  // Ratings
+  ratingsAverage  Float     @default(0)
+  ratingsQuantity Int       @default(0)
+
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  inquiries       Inquiry[]
+  reviews         Review[]
+
+  @@index([difficulty])
+  @@index([priceAmount])
+  @@index([createdAt])
+  @@map("tours")
+}
+
+model User {
+  id              String    @id @default(uuid())
+  name            String
+  email           String    @unique
+  role            Role      @default(CUSTOMER)
+
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  inquiries       Inquiry[]
+  reviews         Review[]
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
+model Inquiry {
+  id                  String        @id @default(uuid())
+
+  // Foreign Keys
+  tourId              String
+  userId              String
+
+  // Booking Details
+  participants        Int
+  startDate           DateTime
+  endDate             DateTime
+  specialRequests     String?       @db.Text
+
+  // Status
+  status              InquiryStatus @default(PENDING)
+
+  // Timestamps
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  // Relations
+  tour                Tour          @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  user                User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tourId])
+  @@index([userId])
+  @@index([status])
+  @@index([startDate])
+  @@index([createdAt])
+  @@map("inquiries")
+}
+
+model Review {
+  id              String    @id @default(uuid())
+
+  // Foreign Keys
+  tourId          String
+  userId          String
+
+  // Review Content
+  rating          Int       // 1-5
+  comment         String    @db.Text
+
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  tour            Tour      @relation(fields: [tourId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tourId, userId]) // One review per user per tour
+  @@index([tourId])
+  @@index([userId])
+  @@index([rating])
+  @@index([createdAt])
+  @@map("reviews")
+}
+
+// =====================================================
+// ENUMS
+// =====================================================
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum Difficulty {
+  EASY
+  MEDIUM
+  DIFFICULT
+}
+
+enum InquiryStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
 }
