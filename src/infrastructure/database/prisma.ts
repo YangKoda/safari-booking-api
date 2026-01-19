@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 
-// Singleton pattern for Prisma Client
+// Singleton pattern for Prisma Client (Prisma 7 compatible)
 class PrismaService {
   private static instance: PrismaClient | null = null;
 
@@ -8,11 +8,9 @@ class PrismaService {
 
   public static getInstance(): PrismaClient {
     if (!PrismaService.instance) {
-      PrismaService.instance = new PrismaClient({
-        log: process.env.NODE_ENV === 'development'
-          ? ['query', 'info', 'warn', 'error']
-          : ['error'],
-      });
+      // Prisma 7: No constructor options needed
+      // Configuration is in prisma.config.ts
+      PrismaService.instance = new PrismaClient();
 
       // Graceful shutdown
       process.on('beforeExit', async () => {
