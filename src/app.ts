@@ -40,9 +40,9 @@ app.get('/health', (_req: Request, res: Response) => {
 // API routes (Phase 5)
 // Public routes
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/tours', tourRoutes);
 
 // Protected routes (require authentication)
-app.use('/api/v1/tours', authenticate, tourRoutes);
 app.use('/api/v1/users', authenticate, authorize('admin'), userRoutes);
 app.use('/api/v1/inquiries', authenticate, inquiryRoutes);
 app.use('/api/v1/reviews', authenticate, reviewRoutes);
