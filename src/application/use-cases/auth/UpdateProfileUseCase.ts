@@ -35,15 +35,16 @@ export class UpdateProfileUseCase {
     if (dto.name) {
       user.updateName(dto.name);
     }
-    if (dto.phone !== undefined) {
-      // Allow clearing phone by passing empty string
-      // Update phone logic (add to User entity if not present)
-    }
     if (dto.photo) {
       user.updatePhoto(dto.photo);
     }
 
-    // 4) Save to database
+    // 4) Update phone (allow clearing with empty string)
+    if (dto.phone !== undefined) {
+      user.updatePhone(dto.phone);
+    }
+
+    // 5) Save to database
     await this.userRepository.update(user);
   }
 }

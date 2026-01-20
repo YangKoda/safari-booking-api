@@ -184,6 +184,25 @@ export class User {
     this.updatedAt = new Date();
   }
 
+  updatePhone(newPhone: string): void {
+  // allow clearing
+  if (newPhone.trim() === '') {
+    this.phone = undefined;
+    this.updatedAt = new Date();
+    return;
+  }
+
+  if (newPhone.length < 7 || newPhone.length > 20) {
+    throw new ValidationError('Invalid phone', {
+      phone: ['Phone must be between 7 and 20 characters'],
+    });
+  }
+
+  this.phone = newPhone;
+  this.updatedAt = new Date();
+}
+
+
   updatePhoto(photoUrl: string): void {
     this.photo = photoUrl;
     this.updatedAt = new Date();
