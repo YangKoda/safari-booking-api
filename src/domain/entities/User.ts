@@ -14,6 +14,7 @@ export interface UserProps {
   active: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  passwordChangedAt?: Date;
 }
 
 export class User {
@@ -27,6 +28,7 @@ export class User {
   private active: boolean;
   private readonly createdAt: Date;
   private updatedAt: Date;
+  private passwordChangedAt?: Date;
 
   constructor(props: UserProps) {
     this.validate(props);
@@ -41,6 +43,7 @@ export class User {
     this.active = props.active;
     this.createdAt = props.createdAt || new Date();
     this.updatedAt = props.updatedAt || new Date();
+    this.passwordChangedAt = props.passwordChangedAt;
   }
 
   private validate(props: UserProps): void {
@@ -64,6 +67,12 @@ export class User {
     if (!props.password || props.password.length === 0) {
       errors.password = ['Password is required'];
     }
+
+    // Role validation
+    const validRoles: UserRole[] = ['customer', 'tour-guide', 'admin'];
+      if (!validRoles.includes(props.role)) {
+      errors.role = ['Invalid role'];
+      }
 
     if (Object.keys(errors).length > 0) {
       throw new ValidationError('User validation failed', errors);
@@ -111,6 +120,10 @@ export class User {
     return new Date(this.updatedAt);
   }
 
+  getPasswordChangedAt(): Date | undefined {
+  return this.passwordChangedAt ? new Date(this.passwordChangedAt) : undefined;
+  }
+
   // Business methods
   updateName(newName: string): void {
     if (!newName || newName.trim().length < 2) {
@@ -134,6 +147,7 @@ export class User {
       });
     }
     this.password = newHashedPassword;
+    this.passwordChangedAt = new Date();
     this.updatedAt = new Date();
   }
 
@@ -151,6 +165,15 @@ export class User {
     this.active = true;
     this.updatedAt = new Date();
   }
+
+  changedPasswordAfter(jwtTimestamp: number): boolean {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = Math.floor(this.passwordChangedAt.getTime() / 1000);
+    return jwtTimestamp < changedTimestamp;
+  }
+  return false;
+}
+
 
   isAdmin(): boolean {
     return this.role === 'admin';
