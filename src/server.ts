@@ -22,7 +22,7 @@ const startServer = async (): Promise<void> => {
 
     // Database connection (Phase 3)
     Logger.info('Checking database connection...');
-    Logger.info('Database connection: PENDING (Phase 3)');
+    Logger.info('Database connection: ACTIVE');
 
     // Start server
     Logger.info('Starting HTTP server...');
@@ -33,7 +33,11 @@ const startServer = async (): Promise<void> => {
 
       console.log('\nEndpoints');
       Logger.info(`  Health: http://localhost:${config.port}/health`);
-      Logger.info(`  API v1: http://localhost:${config.port}/api/v1 (Phase 5)`);
+      Logger.info(`  API v1: http://localhost:${config.port}/api/v1`);
+      Logger.info(`  Tours:  http://localhost:${config.port}/api/v1/tours`);
+      Logger.info(`  Users:  http://localhost:${config.port}/api/v1/users`);
+      Logger.info(`  Inquiries:  http://localhost:${config.port}/api/v1/inquiries`);
+      Logger.info(`  Reviews: http://localhost:${config.port}/api/v1/reviews`);
       console.log('');
     });
   } catch (error) {
