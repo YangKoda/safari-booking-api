@@ -1,20 +1,18 @@
 import { Request, Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { PrismaUserRepository } from '@infrastructure/database/repositories/implementations/PrismaUserRepository';
 import { CreateUserDTO, CreateUserDTOValidator } from '@application/dtos/user/CreateUserDTO';
 import { ValidationError } from '@shared/errors';
 import { User } from '@domain/entities/User';
 import { Email } from '@domain/value-objects/Email';
 import * as bcrypt from 'bcrypt';
+import { prisma } from '@infrastructure/database/prisma-client';
 
 export class UserController {
-  private prisma: PrismaClient;
   private userRepository: PrismaUserRepository;
 
-  constructor() {
-    this.prisma = new PrismaClient();
-    this.userRepository = new PrismaUserRepository(this.prisma);
-  }
+constructor() {
+  this.userRepository = new PrismaUserRepository(prisma);
+}
 
   createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {

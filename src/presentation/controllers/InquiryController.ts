@@ -1,26 +1,21 @@
 import { Request, Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { PrismaInquiryRepository } from '@infrastructure/database/repositories/implementations/PrismaInquiryRepository';
 import { PrismaTourRepository } from '@infrastructure/database/repositories/implementations/PrismaTourRepository';
-import { PrismaUserRepository } from '@infrastructure/database/repositories/implementations/PrismaUserRepository';
 import { CreateInquiryDTO, CreateInquiryDTOValidator } from '@application/dtos/inquiry/CreateInquiryDTO';
 import { ValidationError } from '@shared/errors';
 import { Inquiry } from '@domain/entities/Inquiry';
 import { DateRange } from '@domain/value-objects/DateRange';
 import { Money } from '@domain/value-objects/Money';
+import { prisma } from '@infrastructure/database/prisma-client';
 
 export class InquiryController {
-  private prisma: PrismaClient;
   private inquiryRepository: PrismaInquiryRepository;
   private tourRepository: PrismaTourRepository;
-  private userRepository: PrismaUserRepository;
 
-  constructor() {
-    this.prisma = new PrismaClient();
-    this.inquiryRepository = new PrismaInquiryRepository(this.prisma);
-    this.tourRepository = new PrismaTourRepository(this.prisma);
-    this.userRepository = new PrismaUserRepository(this.prisma);
-  }
+constructor() {
+  this.inquiryRepository = new PrismaInquiryRepository(prisma);
+  this.tourRepository = new PrismaTourRepository(prisma);
+}
 
   createInquiry = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {

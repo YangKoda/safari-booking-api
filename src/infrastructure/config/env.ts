@@ -11,7 +11,7 @@ interface EnvironmentConfig {
   database: {
     url: string;
   };
-  jwt: {
+  jwt?: {
     accessSecret: string;
     refreshSecret: string;
     accessExpiresIn: string;
@@ -46,10 +46,12 @@ export const config: EnvironmentConfig = {
   database: {
     url: process.env.DATABASE_URL!,
   },
+  ...(process.env.JWT_ACCESS_SECRET && process.env.JWT_REFRESH_SECRET && {
   jwt: {
     accessSecret: process.env.JWT_ACCESS_SECRET!,
     refreshSecret: process.env.JWT_REFRESH_SECRET!,
     accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   },
+}),
 } as const;

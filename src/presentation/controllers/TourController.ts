@@ -1,19 +1,17 @@
 import { Request, Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@infrastructure/database/prisma-client';
 import { PrismaTourRepository } from '@infrastructure/database/repositories/implementations/PrismaTourRepository';
+import { CreateTourDTO, CreateTourDTOValidator } from '@application/dtos/tour/CreateTourDTO';
 import { CreateTourUseCase } from '@application/use-cases/tour/CreateTourUseCase';
 import { GetTourUseCase } from '@application/use-cases/tour/GetTourUseCase';
 import { ListToursUseCase } from '@application/use-cases/tour/ListToursUseCase';
-import { CreateTourDTO, CreateTourDTOValidator } from '@application/dtos/tour/CreateTourDTO';
 import { ValidationError } from '@shared/errors';
 
 export class TourController {
-  private prisma: PrismaClient;
   private tourRepository: PrismaTourRepository;
 
   constructor() {
-    this.prisma = new PrismaClient();
-    this.tourRepository = new PrismaTourRepository(this.prisma);
+    this.tourRepository = new PrismaTourRepository(prisma);
   }
 
   createTour = async (req: Request, res: Response, next: NextFunction): Promise<void> => {

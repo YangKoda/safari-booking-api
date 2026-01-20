@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@infrastructure/database/prisma-client';
 import { PrismaReviewRepository } from '@infrastructure/database/repositories/implementations/PrismaReviewRepository';
 import { PrismaTourRepository } from '@infrastructure/database/repositories/implementations/PrismaTourRepository';
 import { PrismaUserRepository } from '@infrastructure/database/repositories/implementations/PrismaUserRepository';
@@ -9,17 +9,15 @@ import { Review } from '@domain/entities/Review';
 import { Rating } from '@domain/value-objects/Rating';
 
 export class ReviewController {
-  private prisma: PrismaClient;
   private reviewRepository: PrismaReviewRepository;
   private tourRepository: PrismaTourRepository;
   private userRepository: PrismaUserRepository;
 
-  constructor() {
-    this.prisma = new PrismaClient();
-    this.reviewRepository = new PrismaReviewRepository(this.prisma);
-    this.tourRepository = new PrismaTourRepository(this.prisma);
-    this.userRepository = new PrismaUserRepository(this.prisma);
-  }
+constructor() {
+  this.reviewRepository = new PrismaReviewRepository(prisma);
+  this.tourRepository = new PrismaTourRepository(prisma);
+  this.userRepository = new PrismaUserRepository(prisma);
+}
 
   createReview = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {

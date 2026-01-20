@@ -1,5 +1,6 @@
 import app from './app';
 import { config } from '@infrastructure/config/env';
+import { checkDatabaseConnection, disconnectDatabase } from '@infrastructure/database/prisma-client';
 import Logger from '@shared/utils/logger';
 
 const printBanner = (): void => {
@@ -20,9 +21,14 @@ const startServer = async (): Promise<void> => {
     Logger.info(`Environment: ${config.nodeEnv}`);
     Logger.info(`Port: ${config.port}`);
 
-    // Database connection (Phase 3)
+    // Database connection
     Logger.info('Checking database connection...');
-    Logger.info('Database connection: ACTIVE');
+    const isConnected = await checkDatabaseConnection();
+
+    if (!isConnected) {
+      Logger.error('Failed to connect to database');
+      process.exit(1);
+    }
 
     // Start server
     Logger.info('Starting HTTP server...');
@@ -31,7 +37,7 @@ const startServer = async (): Promise<void> => {
       const duration = ((Date.now() - startTime) / 1000).toFixed(2);
       Logger.success(`Server started successfully in ${duration}s`);
 
-      console.log('\nEndpoints');
+      console.log('\n Endpoints');
       Logger.info(`  Health: http://localhost:${config.port}/health`);
       Logger.info(`  API v1: http://localhost:${config.port}/api/v1`);
       Logger.info(`  Tours:  http://localhost:${config.port}/api/v1/tours`);
@@ -47,14 +53,31 @@ const startServer = async (): Promise<void> => {
 };
 
 // Graceful shutdown
-process.on('SIGINT', () => {
-  Logger.info('Shutdown initiated...');
-  process.exit(0);
+const gracefulShutdown = async (signal: string): Promise<void> => {
+  Logger.info(`${signal} received. Starting graceful shutdown...`);
+
+  try {
+    await disconnectDatabase();
+    Logger.success('Graceful shutdown completed');
+    process.exit(0);
+  } catch (error) {
+    Logger.error('Error during shutdown:', error);
+    process.exit(1);
+  }
+};
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+process.on('SIGTERM', () =>  gracefulShutdown('SIGTERM'));
+
+// Handle uncaught errors
+process.on('uncaughtException', (error: Error) => {
+  Logger.error('Uncaught Exception:', error);
+  gracefulShutdown('uncaughtException');
 });
 
-process.on('SIGTERM', () => {
-  Logger.info('Shutdown initiated...');
-  process.exit(0);
+process.on('unhandledRejection', (reason: unknown) => {
+  Logger.error('Unhandled Rejection:', reason);
+  gracefulShutdown('unhandledRejection');
 });
 
 startServer();
