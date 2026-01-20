@@ -5,6 +5,10 @@ import helmet from 'helmet';
 import { config } from '@infrastructure/config/env';
 import { errorHandler } from '@infrastructure/web/middleware/errorHandler';
 import Logger from '@shared/utils/logger';
+import { userRoutes } from 'presentation/routes/userRoutes';
+import { tourRoutes } from 'presentation/routes/tourRoutes';
+import { reviewRoutes } from 'presentation/routes/reviewRoutes';
+import { inquiryRoutes } from 'presentation/routes/inquiryRoutes';
 
 const app: Application = express();
 
@@ -31,9 +35,10 @@ app.get('/health', (_req: Request, res: Response) => {
 });
 
 // API routes (Phase 5)
-// app.use('/api/v1/tours', tourRoutes);
-// app.use('/api/v1/inquiries', inquiryRoutes);
-
+app.use('/api/v1/tours', tourRoutes);
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/inquiries', inquiryRoutes);
+app.use('/api/v1/reviews', reviewRoutes);
 // 404 handler
 app.use((_req: Request, res: Response) => {
   res.status(404).json({

@@ -4,8 +4,10 @@ export class DateRange {
   private readonly startDate: Date;
   private readonly endDate: Date;
 
-  constructor(startDate: Date, endDate: Date) {
+  constructor(startDate: Date, endDate: Date, skipValidation: boolean = false) {
+    if (!skipValidation) {
     this.validateDates(startDate, endDate);
+    }
     this.startDate = startDate;
     this.endDate = endDate;
   }
