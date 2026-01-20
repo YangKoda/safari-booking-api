@@ -36,7 +36,7 @@ class Logger {
   }
 
   static success(message: string): void {
-    logger.info(`✅ ${message}`);
+    logger.info(`[OK] ${message}`);
   }
 }
 

@@ -30,21 +30,20 @@ const startServer = async (): Promise<void> => {
       process.exit(1);
     }
 
+    Logger.success('Database connection verified');
+
     // Start server
     Logger.info('Starting HTTP server...');
 
     app.listen(config.port, () => {
       const duration = ((Date.now() - startTime) / 1000).toFixed(2);
       Logger.success(`Server started successfully in ${duration}s`);
-
-      console.log('\n Endpoints');
       Logger.info(`  Health: http://localhost:${config.port}/health`);
       Logger.info(`  API v1: http://localhost:${config.port}/api/v1`);
       Logger.info(`  Tours:  http://localhost:${config.port}/api/v1/tours`);
       Logger.info(`  Users:  http://localhost:${config.port}/api/v1/users`);
       Logger.info(`  Inquiries:  http://localhost:${config.port}/api/v1/inquiries`);
       Logger.info(`  Reviews: http://localhost:${config.port}/api/v1/reviews`);
-      console.log('');
     });
   } catch (error) {
     Logger.error('Failed to start server', error);
