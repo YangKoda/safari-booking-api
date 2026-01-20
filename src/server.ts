@@ -40,6 +40,7 @@ const startServer = async (): Promise<void> => {
       Logger.success(`Server started successfully in ${duration}s`);
       Logger.info(`  Health: http://localhost:${config.port}/health`);
       Logger.info(`  API v1: http://localhost:${config.port}/api/v1`);
+      Logger.info(`  Auth:   http://localhost:${config.port}/api/v1/auth`);
       Logger.info(`  Tours:  http://localhost:${config.port}/api/v1/tours`);
       Logger.info(`  Users:  http://localhost:${config.port}/api/v1/users`);
       Logger.info(`  Inquiries:  http://localhost:${config.port}/api/v1/inquiries`);

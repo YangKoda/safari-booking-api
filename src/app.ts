@@ -9,6 +9,9 @@ import { userRoutes } from 'presentation/routes/userRoutes';
 import { tourRoutes } from 'presentation/routes/tourRoutes';
 import { reviewRoutes } from 'presentation/routes/reviewRoutes';
 import { inquiryRoutes } from 'presentation/routes/inquiryRoutes';
+import { authRoutes } from 'presentation/routes/authRoutes';
+import { authenticate } from '@presentation/middleware/authenticate';
+import { authorize } from '@presentation/middleware/authorize';
 
 const app: Application = express();
 
@@ -35,10 +38,15 @@ app.get('/health', (_req: Request, res: Response) => {
 });
 
 // API routes (Phase 5)
-app.use('/api/v1/tours', tourRoutes);
-app.use('/api/v1/users', userRoutes);
-app.use('/api/v1/inquiries', inquiryRoutes);
-app.use('/api/v1/reviews', reviewRoutes);
+// Public routes
+app.use('/api/v1/auth', authRoutes);
+
+// Protected routes (require authentication)
+app.use('/api/v1/tours', authenticate, tourRoutes);
+app.use('/api/v1/users', authenticate, authorize('admin'), userRoutes);
+app.use('/api/v1/inquiries', authenticate, inquiryRoutes);
+app.use('/api/v1/reviews', authenticate, reviewRoutes);
+
 // 404 handler
 app.use((_req: Request, res: Response) => {
   res.status(404).json({
