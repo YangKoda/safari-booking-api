@@ -97,6 +97,109 @@ export class PrismaTourRepository implements ITourRepository {
   }
 
   // -------------------
+  // Search
+  // -------------------
+
+  async search(dto: {
+  query?: string;
+  difficulty?: 'easy' | 'medium' | 'difficult';
+  minPrice?: number;
+  maxPrice?: number;
+  minDuration?: number;
+  maxDuration?: number;
+  maxGroupSize?: number;
+  minRatingsAverage?: number;
+  startDateFrom?: Date;
+  startDateTo?: Date;
+  location?: string;
+  page: number;
+  limit: number;
+  sortBy: 'createdAt' | 'priceAmount' | 'ratingsAverage' | 'duration';
+  order: 'asc' | 'desc';
+}): Promise<{ tours: Tour[]; total: number }> {
+  const skip = (dto.page - 1) * dto.limit;
+
+  const where: any = {};
+
+  // Difficulty
+  if (dto.difficulty) {
+    where.difficulty =
+      dto.difficulty === 'easy'
+        ? Difficulty.EASY
+        : dto.difficulty === 'medium'
+        ? Difficulty.MEDIUM
+        : Difficulty.DIFFICULT;
+  }
+
+  // Price range
+  if (dto.minPrice !== undefined || dto.maxPrice !== undefined) {
+    where.priceAmount = {};
+    if (dto.minPrice !== undefined) where.priceAmount.gte = dto.minPrice;
+    if (dto.maxPrice !== undefined) where.priceAmount.lte = dto.maxPrice;
+  }
+
+  // Duration range
+  if (dto.minDuration !== undefined || dto.maxDuration !== undefined) {
+    where.duration = {};
+    if (dto.minDuration !== undefined) where.duration.gte = dto.minDuration;
+    if (dto.maxDuration !== undefined) where.duration.lte = dto.maxDuration;
+  }
+
+  // Group size
+  if (dto.maxGroupSize !== undefined) {
+    where.maxGroupSize = { gte: dto.maxGroupSize };
+  }
+
+  // Ratings
+  if (dto.minRatingsAverage !== undefined) {
+    where.ratingsAverage = { gte: dto.minRatingsAverage };
+  }
+
+  // Start dates filter (array)
+  if (dto.startDateFrom || dto.startDateTo) {
+    where.startDates = {};
+    if (dto.startDateFrom) where.startDates.hasSome = [dto.startDateFrom];
+    // NOTE: Prisma can't do lte/gt comparisons inside DateTime[] easily.
+    // We'll do "availability filtering" inside domain OR keep it simple for now.
+  }
+
+  // Text search (query)
+  if (dto.query) {
+    where.OR = [
+      { name: { contains: dto.query, mode: 'insensitive' } },
+      { summary: { contains: dto.query, mode: 'insensitive' } },
+      { description: { contains: dto.query, mode: 'insensitive' } },
+    ];
+  }
+
+  // Location filter (via TourLocation.description)
+  if (dto.location) {
+    where.locations = {
+      some: {
+        description: { contains: dto.location, mode: 'insensitive' },
+      },
+    };
+  }
+
+  const total = await this.prisma.tour.count({ where });
+
+  const tours = await this.prisma.tour.findMany({
+    where,
+    include: { locations: true },
+    orderBy: { [dto.sortBy]: dto.order },
+    skip,
+    take: dto.limit,
+  });
+
+  return {
+    tours: tours.map((t) => TourMapper.toDomain(t)),
+    total,
+  };
+}
+
+
+
+  // -------------------
   // Update
   // -------------------
   async update(tour: Tour): Promise<Tour> {
