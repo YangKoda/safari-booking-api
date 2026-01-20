@@ -8,6 +8,7 @@ import type { UserRole } from '@domain/entities/User';
 export interface RegisterUserDTO {
   name: string;
   email: string;
+  username?: string;
   password: string;
   passwordConfirm: string;
   role?: 'customer' | 'tour-guide'; // Only allow customer/tour-guide registration (not admin)
@@ -38,6 +39,16 @@ export class RegisterUserUseCase {
       throw new ValidationError('Registration failed', {
         email: ['Email already in use'],
       });
+    }
+
+        // Check if username already exists (if provided)
+    if (dto.username) {
+      const existingUserByUsername = await this.userRepository.findByUsername(dto.username);
+      if (existingUserByUsername) {
+        throw new ValidationError('Registration failed', {
+          username: ['Username already taken'],
+        });
+      }
     }
 
     // Hash password
