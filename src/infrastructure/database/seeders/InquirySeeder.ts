@@ -40,18 +40,24 @@ export class InquirySeeder {
         const totalPrice = Number(tour.priceAmount) * numberOfPeople;
 
         // Generate date based on status
-        let preferredDate: Date;
+        let preferredStartDate: Date;
         if (status === 'COMPLETED') {
           // Past date (1-60 days ago)
           const daysAgo = Math.floor(Math.random() * 60) + 1;
-          preferredDate = new Date();
-          preferredDate.setDate(preferredDate.getDate() - daysAgo);
+          preferredStartDate = new Date();
+          preferredStartDate.setDate(preferredStartDate.getDate() - daysAgo);
         } else {
           // Future date (10-180 days from now)
           const daysAhead = Math.floor(Math.random() * 170) + 10;
-          preferredDate = new Date();
-          preferredDate.setDate(preferredDate.getDate() + daysAhead);
+          preferredStartDate = new Date();
+          preferredStartDate.setDate(preferredStartDate.getDate() + daysAhead);
         }
+
+          // End date = start date + 3–10 days
+          const tripDays = Math.floor(Math.random() * 8) + 3;
+          const preferredEndDate = new Date(preferredStartDate);
+          preferredEndDate.setDate(preferredEndDate.getDate() + tripDays);
+
 
         // Create inquiry with random worldwide phone format
         await this.prisma.inquiry.create({
@@ -62,7 +68,8 @@ export class InquirySeeder {
             numberOfPeople,
             tourId: tour.id,
             userId: customer.id,
-            preferredDate,
+            preferredStartDate,
+            preferredEndDate,
             status,
             totalPrice,
             currency: tour.currency,

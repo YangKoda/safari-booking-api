@@ -10,6 +10,7 @@ export interface UserProps {
   password: string; // Hashed password
   role: UserRole;
   photo?: string;
+  phone?: string;
   active: boolean;
   createdAt?: Date;
   updatedAt?: Date;
@@ -22,6 +23,7 @@ export class User {
   private password: string;
   private role: UserRole;
   private photo?: string;
+  private phone?: string;
   private active: boolean;
   private readonly createdAt: Date;
   private updatedAt: Date;
@@ -35,6 +37,7 @@ export class User {
     this.password = props.password;
     this.role = props.role;
     this.photo = props.photo;
+    this.phone = props.phone;
     this.active = props.active;
     this.createdAt = props.createdAt || new Date();
     this.updatedAt = props.updatedAt || new Date();
@@ -91,6 +94,10 @@ export class User {
   getPhoto(): string | undefined {
     return this.photo;
   }
+
+  getPhone(): string | undefined {
+  return this.phone;
+}
 
   isActive(): boolean {
     return this.active;

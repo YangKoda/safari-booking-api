@@ -69,6 +69,8 @@ export class Review {
     return this.id;
   }
 
+  
+
   getTourId(): string {
     return this.tourId;
   }

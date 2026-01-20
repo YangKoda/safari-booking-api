@@ -8,6 +8,7 @@ export type TourDifficulty = 'easy' | 'medium' | 'difficult';
 export interface TourProps {
   id?: string;
   name: string;
+  slug: string;
   description: string;
   duration: number; // in days
   maxGroupSize: number;
@@ -20,7 +21,6 @@ export interface TourProps {
   startLocation: {
     description: string;
     coordinates: [number, number]; // [longitude, latitude]
-    address: string;
   };
   locations: Array<{
     description: string;
@@ -37,6 +37,7 @@ export interface TourProps {
 export class Tour {
   private readonly id?: string;
   private name: string;
+  private slug: string;
   private description: string;
   private duration: number;
   private maxGroupSize: number;
@@ -59,6 +60,7 @@ export class Tour {
 
     this.id = props.id;
     this.name = props.name;
+    this.slug = props.slug;
     this.description = props.description;
     this.duration = props.duration;
     this.maxGroupSize = props.maxGroupSize;
@@ -130,6 +132,10 @@ export class Tour {
     return this.name;
   }
 
+  getSlug(): string {
+  return this.slug;
+}
+
   getDescription(): string {
     return this.description;
   }
@@ -141,9 +147,6 @@ export class Tour {
   getMaxCapacity(): number {
     return this.maxGroupSize;
   }
-
-
-
 
   getMaxGroupSize(): number {
     return this.maxGroupSize;
