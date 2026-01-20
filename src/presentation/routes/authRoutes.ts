@@ -12,5 +12,6 @@ router.post('/refresh-token', authController.refreshToken);
 
 // Protected routes (authentication required)
 router.get('/me', authenticate, authController.getMe);
-
+router.post('/change-password', authenticate, authController.changePassword);  // ← NEW
+router.patch('/profile', authenticate, authController.updateProfile);    
 export { router as authRoutes };
