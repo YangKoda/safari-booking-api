@@ -7,6 +7,7 @@ export interface UserProps {
   id?: string;
   name: string;
   email: Email;
+  username?: string;
   password: string; // Hashed password
   role: UserRole;
   photo?: string;
@@ -29,6 +30,7 @@ export class User {
   private readonly createdAt: Date;
   private updatedAt: Date;
   private passwordChangedAt?: Date;
+  private username?: string;
 
   constructor(props: UserProps) {
     this.validate(props);
@@ -44,6 +46,7 @@ export class User {
     this.createdAt = props.createdAt || new Date();
     this.updatedAt = props.updatedAt || new Date();
     this.passwordChangedAt = props.passwordChangedAt;
+    this.username = props.username;
   }
 
   private validate(props: UserProps): void {
@@ -74,6 +77,17 @@ export class User {
       errors.role = ['Invalid role'];
       }
 
+    // Username validation
+    if (props.username !== undefined) {
+      if (props.username.length < 3) {
+        errors.username = ['Username must be at least 3 characters'];
+      } else if (props.username.length > 30) {
+        errors.username = ['Username must not exceed 30 characters'];
+      } else if (!/^[a-zA-Z0-9_]+$/.test(props.username)) {
+        errors.username = ['Username can only contain letters, numbers, and underscores'];
+      }
+    }
+
     if (Object.keys(errors).length > 0) {
       throw new ValidationError('User validation failed', errors);
     }
@@ -90,6 +104,10 @@ export class User {
 
   getEmail(): Email {
     return this.email;
+  }
+
+  getUsername(): string | undefined {
+    return this.username;
   }
 
   getPassword(): string {
@@ -137,6 +155,21 @@ export class User {
 
   updateEmail(newEmail: Email): void {
     this.email = newEmail;
+    this.updatedAt = new Date();
+  }
+
+    updateUsername(newUsername: string): void {
+    if (newUsername.length < 3 || newUsername.length > 30) {
+      throw new ValidationError('Invalid username', {
+        username: ['Username must be between 3 and 30 characters'],
+      });
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(newUsername)) {
+      throw new ValidationError('Invalid username', {
+        username: ['Username can only contain letters, numbers, and underscores'],
+      });
+    }
+    this.username = newUsername;
     this.updatedAt = new Date();
   }
 
