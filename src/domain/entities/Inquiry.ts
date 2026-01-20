@@ -6,6 +6,7 @@ import { Money } from '@domain/value-objects/Money';
 export type InquiryStatus = 'pending' | 'confirmed' | 'cancelled' | 'completed';
 export interface InquiryProps {
   id?: string;
+  skipPastDateValidation?: boolean;
   tourId: string;
   userId: string;
 
@@ -94,7 +95,7 @@ export class Inquiry {
     // Date range validation (DateRange value object validates itself)
     if (!props.preferredDateRange) {
       errors.preferredDateRange = ['Preferred date range is required'];
-    } else if (props.preferredDateRange.isInPast()) {
+    } else if (!props.skipPastDateValidation && props.preferredDateRange.isInPast()) {
       errors.preferredDateRange = ['Cannot book tours in the past'];
     }
 

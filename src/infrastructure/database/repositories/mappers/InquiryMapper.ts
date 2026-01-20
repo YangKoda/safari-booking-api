@@ -9,6 +9,7 @@ export class InquiryMapper {
 
     const inquiryProps: InquiryProps = {
       id: prisma.id,
+      skipPastDateValidation: true,
       tourId: prisma.tourId,
       userId: prisma.userId || '',
       customerName: prisma.customerName,
@@ -18,7 +19,8 @@ export class InquiryMapper {
 
       preferredDateRange: new DateRange(
         new Date(prisma.preferredStartDate),
-        new Date(prisma.preferredEndDate)
+        new Date(prisma.preferredEndDate),
+        true
       ),
 
       totalPrice: new Money(Number(prisma.totalPrice), prisma.currency),
