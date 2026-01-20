@@ -152,7 +152,8 @@ model User {
   id            String   @id @default(uuid())
   name          String
   email         String   @unique
-  phone             String?
+  username      String?   @unique
+  phone         String?
   role          UserRole @default(USER)
   password      String   // Will be hashed
   photo         String?
@@ -160,6 +161,8 @@ model User {
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  passwordChangedAt DateTime?
+
 
   // Relations
   tourGuides    TourGuide[]

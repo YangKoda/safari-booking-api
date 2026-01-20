@@ -8,6 +8,7 @@ export interface IUserRepository {
   // Read
   findById(id: string): Promise<User | null>;
   findByEmail(email: Email): Promise<User | null>;
+  findByUsername(username: string): Promise<User | null>;
   findAll(): Promise<User[]>;
   findByRole(role: 'customer' | 'tour-guide' | 'admin'): Promise<User[]>;
   findActiveUsers(): Promise<User[]>;

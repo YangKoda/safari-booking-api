@@ -3,6 +3,8 @@ import { IUserRepository } from '@domain/repositories/IUserRepository';
 import { User } from '@domain/entities/User';
 import { Email } from '@domain/value-objects/Email';
 import { NotFoundError } from '@shared/errors';
+import { UserMapper } from '@infrastructure/database/repositories/mappers/UserMapper';
+
 
 /**
  * Domain roles:  'customer' | 'tour-guide' | 'admin'
@@ -118,8 +120,21 @@ export class PrismaUserRepository implements IUserRepository {
       active: u.active,
       createdAt: u.createdAt,
       updatedAt: u.updatedAt,
+      passwordChangedAt: u.passwordChangedAt ?? undefined,
     });
   }
+
+  async findByUsername(username: string): Promise<User | null> {
+  const prismaUser = await this.prisma.user.findUnique({
+    where: { username },
+  });
+
+  if (!prismaUser) {
+    return null;
+  }
+
+  return UserMapper.toDomain(prismaUser);
+}
 
   async findAll(): Promise<User[]> {
     const users = await this.prisma.user.findMany({

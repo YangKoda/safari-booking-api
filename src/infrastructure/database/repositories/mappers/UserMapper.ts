@@ -11,11 +11,15 @@ export class UserMapper {
       id: prisma.id,
       name: prisma.name,
       email: new Email(prisma.email),
+      username: prisma.username || undefined,
       role: this.mapRoleToDomain(prisma.role),
       password: prisma.password,
       active: prisma.active,
       photo: prisma.photo || undefined,
       phone: prisma.phone || undefined,
+      createdAt: prisma.createdAt,
+      updatedAt: prisma.updatedAt,
+      passwordChangedAt: prisma.passwordChangedAt ?? undefined,
     };
 
     return new User(userProps);
@@ -29,11 +33,13 @@ export class UserMapper {
       id: user.getId() || '',
       name: user.getName(),
       email: user.getEmail().getValue(),
+      username: user.getUsername() || null,
       role: this.mapRoleToPrisma(user.getRole()),
       password: user.getPassword(),
       active: user.isActive(),
       photo: user.getPhoto() || null,
       phone: user.getPhone() || null,
+      passwordChangedAt: user.getPasswordChangedAt() ?? null,
     };
   }
 
@@ -45,6 +51,7 @@ export class UserMapper {
       case 'ADMIN':
         return 'admin';
       case 'GUIDE':
+      case 'LEAD_GUIDE':
         return 'tour-guide';
       case 'USER':
         return 'customer';
