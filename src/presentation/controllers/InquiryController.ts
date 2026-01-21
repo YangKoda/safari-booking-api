@@ -7,14 +7,21 @@ import { Inquiry } from '@domain/entities/Inquiry';
 import { DateRange } from '@domain/value-objects/DateRange';
 import { Money } from '@domain/value-objects/Money';
 import { prisma } from '@infrastructure/database/prisma-client';
+import Logger from '@shared/utils/logger';
+import { NodemailerEmailService } from '@infrastructure/email/NodemailerEmailService';
+
 
 export class InquiryController {
   private inquiryRepository: PrismaInquiryRepository;
   private tourRepository: PrismaTourRepository;
+  private emailService: NodemailerEmailService;
+
 
 constructor() {
   this.inquiryRepository = new PrismaInquiryRepository(prisma);
   this.tourRepository = new PrismaTourRepository(prisma);
+
+  this.emailService = new NodemailerEmailService();
 }
 
   createInquiry = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -73,6 +80,29 @@ constructor() {
 
       // Persist via repository
       const result = await this.inquiryRepository.save(inquiry);
+      // Send inquiry received email (best-effort)
+      try {
+        await this.emailService.send({
+          to: result.getCustomerEmail(),
+          subject: 'We received your safari inquiry 📨',
+          template: 'inquiry-received',
+          variables: {
+            customerName: result.getCustomerName(),
+            tourName: tour.getName(),
+            startDate: dto.startDate,
+            endDate: dto.endDate,
+            participants: dto.participants,
+            totalAmount: result.getTotalPrice().getAmount(),
+            currency: result.getTotalPrice().getCurrency(),
+        },
+      });
+
+      Logger.info(`Inquiry received email sent → ${result.getCustomerEmail()} (inquiryId=${result.getId()})`);
+    } catch (err: any) {
+      Logger.error(`Inquiry received email FAILED → ${result.getCustomerEmail()}: ${err.message}`);
+}
+
+
 
       res.status(201).json({
         status: 'success',
@@ -146,34 +176,66 @@ constructor() {
 
   confirmInquiry = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const id = String(req.params.id);
-      const inquiry = await this.inquiryRepository.findById(id);
+    const id = String(req.params.id);
+    const inquiry = await this.inquiryRepository.findById(id);
 
-      if (!inquiry) {
-        res.status(404).json({
-          status: 'error',
-          message: 'Safari booking inquiry not found',
-        });
-        return;
-      }
+    if (!inquiry) {
+      res.status(404).json({
+        status: 'error',
+        message: 'Safari booking inquiry not found',
+      });
+      return;
+    }
 
-      // Use domain method for business logic
-      inquiry.confirm();
-      const result = await this.inquiryRepository.update(inquiry);
+    // Domain method for business logic
+    inquiry.confirm();
+    const result = await this.inquiryRepository.update(inquiry);
 
-      res.status(200).json({
-        status: 'success',
-        message: 'Safari booking confirmed successfully',
-        data: {
-          id: result.getId(),
-          status: result.getStatus(),
-          updatedAt: result.getUpdatedAt(),
+    // Fetch tour name (professional email content)
+    const tour = await this.tourRepository.findById(result.getTourId());
+    const tourName = tour ? tour.getName() : 'Safari Tour';
+
+    // Send booking confirmation email (Best-effort: confirmation must NOT fail)
+    try {
+      const dateRange = result.getPreferredDateRange();
+
+      await this.emailService.send({
+        to: result.getCustomerEmail(),
+        subject: 'Your Safari Booking is Confirmed ✅',
+        template: 'booking-confirmation',
+        variables: {
+          customerName: result.getCustomerName(),
+          tourName,
+          startDate: dateRange.getStartDate().toISOString().split('T')[0],
+          endDate: dateRange.getEndDate().toISOString().split('T')[0],
+          participants: result.getParticipants(),
+          totalAmount: result.getTotalPrice().getAmount(),
+          currency: result.getTotalPrice().getCurrency(),
         },
       });
-    } catch (error) {
-      next(error);
+
+      Logger.info(`Booking confirmation email sent → ${result.getCustomerEmail()} (inquiryId=${id})`);
+    } catch (emailError: any) {
+      Logger.error(
+        `Booking confirmation email FAILED → ${result.getCustomerEmail()} (inquiryId=${id}): ${emailError.message}`
+      );
+      // Important: Do NOT block confirmation if email fails
     }
-  };
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Safari booking confirmed successfully',
+      data: {
+        id: result.getId(),
+        status: result.getStatus(),
+        updatedAt: result.getUpdatedAt(),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 
   cancelInquiry = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -191,6 +253,33 @@ constructor() {
       // Use domain method for business logic
       inquiry.cancel();
       const result = await this.inquiryRepository.update(inquiry);
+
+        //  Send cancellation email (best-effort)
+      try {
+        const tour = await this.tourRepository.findById(result.getTourId());
+        const tourName = tour ? tour.getName() : 'Safari Tour';
+
+        const dateRange = result.getPreferredDateRange();
+
+        await this.emailService.send({
+        to: result.getCustomerEmail(),
+        subject: 'Your Safari Booking has been Cancelled ',
+        template: 'booking-cancelled',
+        variables: {
+          customerName: result.getCustomerName(),
+          tourName,
+          startDate: dateRange.getStartDate().toISOString().split('T')[0],
+          endDate: dateRange.getEndDate().toISOString().split('T')[0],
+          participants: result.getParticipants(),
+      },
+    });
+
+      Logger.info(`Cancellation email sent → ${result.getCustomerEmail()} (inquiryId=${id})`);
+    } catch (emailError: any) {
+      Logger.error(
+    `Cancellation email FAILED → ${result.getCustomerEmail()} (inquiryId=${id}): ${emailError.message}`
+    );
+  }
 
       res.status(200).json({
         status: 'success',

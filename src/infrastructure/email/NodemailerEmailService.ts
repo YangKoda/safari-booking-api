@@ -6,10 +6,20 @@ import Logger from '@shared/utils/logger';
 
 
 export class NodemailerEmailService implements IEmailService {
-  private transporter: Transporter;
+  private transporter: Transporter | null;
   private renderer: TemplateRenderer;
 
   constructor() {
+    this.renderer = new TemplateRenderer();
+    // If email disabled, do not configure SMTP at all
+    if (!config.email.enabled) {
+      this.transporter = null;
+      Logger.info('Email service disabled (EMAIL_ENABLED=false)');
+      return;
+    }
+    if (!config.smtp) {
+      throw new Error('SMTP config missing while EMAIL_ENABLED=true');
+    }
     this.transporter = nodemailer.createTransport({
       host: config.smtp.host,
       port: config.smtp.port,
@@ -37,6 +47,11 @@ export class NodemailerEmailService implements IEmailService {
   }
 
   async send(dto: SendEmailDTO): Promise<void> {
+    //  Best practice: silently ignore if email is disabled
+    if (!config.email.enabled) return;
+    if (!this.transporter || !config.smtp) {
+      throw new Error('Email transporter not initialized');
+    }
     try {
     const html = this.renderer.render(dto.template, {
       ...dto.variables,
