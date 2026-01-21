@@ -13,6 +13,14 @@ interface EnvironmentConfig {
   database: {
     url: string;
   };
+  smtp: {
+  host: string;
+  port: number;
+  user: string;
+  pass: string;
+  fromEmail: string;
+  fromName: string;
+};
   jwt: {
     accessSecret: string;
     refreshSecret: string;
@@ -27,6 +35,10 @@ const requiredEnvVars = [
   'DATABASE_URL',
   'JWT_ACCESS_SECRET',
   'JWT_REFRESH_SECRET',
+  'SMTP_HOST',
+  'SMTP_PORT',
+  'SMTP_USER',
+  'SMTP_PASS',
 ] as const;
 
 const validateEnv = (): void => {
@@ -53,5 +65,13 @@ export const config: EnvironmentConfig = {
     refreshSecret: process.env.JWT_REFRESH_SECRET!,
     accessExpiresIn: (process.env.JWT_ACCESS_EXPIRES_IN || '15m') as SignOptions['expiresIn'],
     refreshExpiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as SignOptions['expiresIn'],
+  },
+  smtp: {
+    host: process.env.SMTP_HOST!,
+    port: parseInt(process.env.SMTP_PORT || '587', 10),
+    user: process.env.SMTP_USER!,
+    pass: process.env.SMTP_PASS!,
+    fromEmail: process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER!,
+    fromName: process.env.SMTP_FROM_NAME || 'Safari Booking',
   },
 } as const;
