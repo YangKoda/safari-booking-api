@@ -30,8 +30,6 @@ interface EnvironmentConfig {
 }
 
 const requiredEnvVars = [
-  'NODE_ENV',
-  'PORT',
   'DATABASE_URL',
   'JWT_ACCESS_SECRET',
   'JWT_REFRESH_SECRET',
