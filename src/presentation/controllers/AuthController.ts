@@ -71,6 +71,7 @@ export class AuthController {
             id: user.getId(),
             name: user.getName(),
             email: user.getEmail().getValue(),
+            username: user.getUsername(),
             role: user.getRole(),
           },
           tokens,
