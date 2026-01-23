@@ -59,6 +59,7 @@ export class RegisterUserUseCase {
     const user = new User({
       name: dto.name,
       email,
+      username: dto.username,
       password: hashedPassword,
       role: userRole,
       phone: dto.phone,
