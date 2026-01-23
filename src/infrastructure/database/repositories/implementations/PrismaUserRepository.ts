@@ -219,11 +219,13 @@ export class PrismaUserRepository implements IUserRepository {
       data: {
         name: user.getName(),
         email: user.getEmail().toString(),
+        username: user.getUsername() || null,
         password: user.getPassword(),
         role: toPrismaRole(user.getRole()),
         photo: user.getPhoto() ?? null,
         phone: user.getPhone() ?? null,
         active: user.isActive(),
+        passwordChangedAt: user.getPasswordChangedAt() ?? null,
       },
     });
 
@@ -231,6 +233,7 @@ export class PrismaUserRepository implements IUserRepository {
       id: updated.id,
       name: updated.name,
       email: new Email(updated.email),
+      username: updated.username || undefined,
       password: updated.password,
       role: toDomainRole(updated.role),
       photo: updated.photo ?? undefined,
@@ -238,6 +241,7 @@ export class PrismaUserRepository implements IUserRepository {
       active: updated.active,
       createdAt: updated.createdAt,
       updatedAt: updated.updatedAt,
+      passwordChangedAt: updated.passwordChangedAt ?? undefined,
     });
   }
 

@@ -5,7 +5,7 @@ import { PrismaUserRepository } from '@infrastructure/database/repositories/impl
 import { RegisterUserUseCase } from '@application/use-cases/auth/RegisterUserUseCase';
 import { LoginUserUseCase } from '@application/use-cases/auth/LoginUserUseCase';
 import { RefreshTokenUseCase } from '@application/use-cases/auth/RefreshTokenUseCase';
-import { prisma } from '@infrastructure/database/prisma-client'; 
+import { prisma } from '@infrastructure/database/prisma-client';
 import { ChangePasswordUseCase } from '@application/use-cases/auth/ChangePasswordUseCase';
 import { UpdateProfileUseCase } from '@application/use-cases/auth/UpdateProfileUseCase';
 
@@ -37,6 +37,7 @@ export class AuthController {
             id: user.getId(),
             name: user.getName(),
             email: user.getEmail().getValue(),
+            username: user.getUsername(),
             role: user.getRole(),
           },
           tokens,
@@ -143,6 +144,7 @@ export class AuthController {
             id: user.getId(),
             name: user.getName(),
             email: user.getEmail().getValue(),
+            username: user.getUsername(),
             role: user.getRole(),
             phone: user.getPhone(),
             photo: user.getPhoto(),
