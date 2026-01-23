@@ -51,6 +51,7 @@ export class PrismaUserRepository implements IUserRepository {
     const data = {
       name: user.getName(),
       email: emailStr,
+      username: user.getUsername() || null,
       password: user.getPassword(),
       role: toPrismaRole(user.getRole()),
       photo: user.getPhoto() ?? null,
@@ -72,6 +73,7 @@ export class PrismaUserRepository implements IUserRepository {
       id: saved.id,
       name: saved.name,
       email: new Email(saved.email),
+      username: saved.username || undefined,
       password: saved.password,
       role: toDomainRole(saved.role),
       photo: saved.photo ?? undefined,
@@ -79,6 +81,7 @@ export class PrismaUserRepository implements IUserRepository {
       active: saved.active,
       createdAt: saved.createdAt,
       updatedAt: saved.updatedAt,
+      passwordChangedAt: saved.passwordChangedAt ?? undefined,
     });
   }
 
