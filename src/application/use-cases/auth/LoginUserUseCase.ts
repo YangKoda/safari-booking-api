@@ -21,8 +21,8 @@ export class LoginUserUseCase {
 
   async execute(dto: LoginUserDTO): Promise<LoginResult> {
     let user : User | null = null;
-    // 1) Find user by email (Email VO validates the format)
-    const isEmail = new Email(dto.emailOrUsername);
+    // 1) Determine if input is email or username
+    const isEmail = dto.emailOrUsername.includes('@');
 
     if (isEmail) {
       // Try to find by email
