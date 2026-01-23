@@ -202,7 +202,7 @@ constructor() {
       await this.emailService.send({
         to: result.getCustomerEmail(),
         subject: 'Your Safari Booking is Confirmed ✅',
-        template: 'booking-confirmation',
+        template: 'inquiry-confirmed',
         variables: {
           customerName: result.getCustomerName(),
           tourName,
@@ -264,7 +264,7 @@ constructor() {
         await this.emailService.send({
         to: result.getCustomerEmail(),
         subject: 'Your Safari Booking has been Cancelled ',
-        template: 'booking-cancelled',
+        template: 'inquiry-cancelled',
         variables: {
           customerName: result.getCustomerName(),
           tourName,
