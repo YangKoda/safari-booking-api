@@ -96,6 +96,7 @@ export class PrismaUserRepository implements IUserRepository {
       id: u.id,
       name: u.name,
       email: new Email(u.email),
+      username: u.username || undefined,
       password: u.password,
       role: toDomainRole(u.role),
       photo: u.photo ?? undefined,
@@ -103,6 +104,7 @@ export class PrismaUserRepository implements IUserRepository {
       active: u.active,
       createdAt: u.createdAt,
       updatedAt: u.updatedAt,
+      passwordChangedAt: u.passwordChangedAt ?? undefined,
     });
   }
 
