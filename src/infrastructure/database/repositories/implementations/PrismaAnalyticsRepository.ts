@@ -146,9 +146,99 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
       });
   }
 
-  async getPopularTours(): Promise<PopularToursDTO> {
-    throw new Error('Not implemented yet');
-  }
+async getPopularTours(): Promise<PopularToursDTO> {
+  // Most booked (by inquiry count)
+  const mostBooked = await this.prisma.tour.findMany({
+    take: 5,
+    orderBy: { inquiries: { _count: 'desc' } },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      imageCover: true,
+      ratingsAverage: true,
+      _count: { select: { inquiries: true } },
+    },
+  });
+
+  // Most viewed (by viewCount)
+  const mostViewed = await this.prisma.tour.findMany({
+    take: 5,
+    orderBy: { viewCount: 'desc' },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      imageCover: true,
+      viewCount: true,
+      ratingsAverage: true,
+    },
+  });
+
+  // Most reviewed (by review count)
+  const mostReviewed = await this.prisma.tour.findMany({
+    take: 5,
+    orderBy: { reviews: { _count: 'desc' } },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      imageCover: true,
+      ratingsAverage: true,
+      _count: { select: { reviews: true } },
+    },
+  });
+
+  // Highest rated (by ratingsAverage, minimum 5 reviews)
+  const highestRated = await this.prisma.tour.findMany({
+    take: 5,
+    where: { ratingsQuantity: { gte: 5 } },
+    orderBy: { ratingsAverage: 'desc' },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      imageCover: true,
+      ratingsAverage: true,
+      ratingsQuantity: true,
+    },
+  });
+
+  return {
+    mostBooked: mostBooked.map((t) => ({
+      id: t.id,
+      name: t.name,
+      slug: t.slug,
+      count: t._count.inquiries,
+      rating: Number(t.ratingsAverage),
+      imageCover: t.imageCover || undefined,
+    })),
+    mostViewed: mostViewed.map((t) => ({
+      id: t.id,
+      name: t.name,
+      slug: t.slug,
+      count: t.viewCount,
+      rating: Number(t.ratingsAverage),
+      imageCover: t.imageCover || undefined,
+    })),
+    mostReviewed: mostReviewed.map((t) => ({
+      id: t.id,
+      name: t.name,
+      slug: t.slug,
+      count: t._count.reviews,
+      rating: Number(t.ratingsAverage),
+      imageCover: t.imageCover || undefined,
+    })),
+    highestRated: highestRated.map((t) => ({
+      id: t.id,
+      name: t.name,
+      slug: t.slug,
+      count: t.ratingsQuantity,
+      rating: Number(t.ratingsAverage),
+      imageCover: t.imageCover || undefined,
+    })),
+  };
+}
 
   async getCustomerInsights(): Promise<CustomerInsightsDTO> {
     throw new Error('Not implemented yet');
