@@ -1,6 +1,6 @@
 import { PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { IFileUploadService, UploadFileDTO, UploadedFile } from '@domain/services/IFileUploadService';
+import { IFileUploadService, UploadFileDTO, UploadedFile } from '@application/ports/output/IFileUploadService';
 import { S3Config } from './S3Config';
 import { ImageProcessingService } from './ImageProcessingService';
 import Logger from '@shared/utils/logger';
