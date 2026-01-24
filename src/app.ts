@@ -13,6 +13,7 @@ import { authRoutes } from 'presentation/routes/authRoutes';
 import { authenticate } from '@presentation/middleware/authenticate';
 import { authorize } from '@presentation/middleware/authorize';
 import { uploadRoutes } from '@presentation/routes/uploadRoutes';
+import analyticsRoutes from '@presentation/routes/analyticsRoutes';
 
 
 
@@ -50,6 +51,7 @@ app.use('/api/v1/users', authenticate, authorize('admin'), userRoutes);
 app.use('/api/v1/inquiries', authenticate, inquiryRoutes);
 app.use('/api/v1/reviews', authenticate, reviewRoutes);
 app.use('/api/v1/upload', uploadRoutes);
+app.use('/api/v1/analytics', authenticate, authorize('admin'), analyticsRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {
