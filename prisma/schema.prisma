@@ -224,6 +224,7 @@ model Review {
 
   rating    Int      // 1-5 stars
   comment   String   @db.Text
+  images    String[]
 
   // Relations
   tourId    String
