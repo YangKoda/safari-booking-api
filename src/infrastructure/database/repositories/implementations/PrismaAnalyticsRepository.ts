@@ -6,7 +6,9 @@ import {
   PopularToursDTO,
   CustomerInsightsDTO,
   GeographicAnalyticsDTO,
+  MonthlyRevenueDTO,
 } from '@application/dtos/analytics/AnalyticsDTOs';
+
 
 export class PrismaAnalyticsRepository implements IAnalyticsRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -70,7 +72,78 @@ export class PrismaAnalyticsRepository implements IAnalyticsRepository {
 
   // Placeholder methods (will implement next)
   async getBookingAnalytics(): Promise<BookingAnalyticsDTO> {
-    throw new Error('Not implemented yet');
+    const [
+      totalInquiries,
+      confirmedInquiries,
+      pendingInquiries,
+      cancelledInquiries,
+      avgBookingValue,
+    ] = await Promise.all([
+      this.prisma.inquiry.count(),
+      this.prisma.inquiry.count({ where: { status: InquiryStatus.CONFIRMED } }),
+      this.prisma.inquiry.count({ where: { status: InquiryStatus.PENDING } }),
+      this.prisma.inquiry.count({ where: { status: InquiryStatus.CANCELLED } }),
+      this.prisma.inquiry.aggregate({
+        where: { status: InquiryStatus.CONFIRMED },
+        _avg: { totalPrice: true },
+      }),
+    ]);
+
+    // Get revenue by month for last 12 months
+    const twelveMonthsAgo = new Date();
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
+    const monthlyData = await this.prisma.inquiry.groupBy({
+      by: ['createdAt'],
+      where: {
+        status: InquiryStatus.CONFIRMED,
+        createdAt: { gte: twelveMonthsAgo },
+      },
+      _sum: { totalPrice: true },
+      _count: true,
+    });
+
+    // Group by month
+    const revenueByMonth = this.groupByMonth(monthlyData);
+
+    return {
+      totalInquiries,
+      confirmedInquiries,
+      pendingInquiries,
+      cancelledInquiries,
+      averageBookingValue: Number(avgBookingValue._avg.totalPrice ?? 0),
+      revenueByMonth,
+    };
+  }
+
+  private groupByMonth(data: any[]): MonthlyRevenueDTO[] {
+    const monthMap = new Map<string, { revenue: number; bookings: number }>();
+
+    data.forEach((item) => {
+      const date = new Date(item.createdAt);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+      const existing = monthMap.get(key) || { revenue: 0, bookings: 0 };
+      monthMap.set(key, {
+        revenue: existing.revenue + Number(item._sum.totalPrice ?? 0),
+        bookings: existing.bookings + (item._count ?? 0),
+      });
+    });
+
+    return Array.from(monthMap.entries())
+      .map(([key, value]) => {
+        const [year, month] = key.split('-');
+        return {
+          month: new Date(Number(year), Number(month) - 1).toLocaleString('default', { month: 'long' }),
+          year: Number(year),
+          revenue: value.revenue,
+          bookings: value.bookings,
+        };
+      })
+      .sort((a, b) => {
+        if (a.year !== b.year) return a.year - b.year;
+        return new Date(`${a.month} 1`).getMonth() - new Date(`${b.month} 1`).getMonth();
+      });
   }
 
   async getPopularTours(): Promise<PopularToursDTO> {
