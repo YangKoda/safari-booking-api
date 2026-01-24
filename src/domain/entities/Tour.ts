@@ -30,6 +30,7 @@ export interface TourProps {
   guides: string[]; // User IDs
   ratingsAverage?: number;
   ratingsQuantity?: number;
+  viewCount?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -52,6 +53,7 @@ export class Tour {
   private guides: string[];
   private ratingsAverage: number;
   private ratingsQuantity: number;
+  private viewCount: number;
   private readonly createdAt: Date;
   private updatedAt: Date;
 
@@ -75,6 +77,7 @@ export class Tour {
     this.guides = props.guides;
     this.ratingsAverage = props.ratingsAverage || 0;
     this.ratingsQuantity = props.ratingsQuantity || 0;
+    this.viewCount = props.viewCount || 0;
     this.createdAt = props.createdAt || new Date();
     this.updatedAt = props.updatedAt || new Date();
   }
@@ -134,6 +137,10 @@ export class Tour {
 
   getSlug(): string {
   return this.slug;
+}
+
+getViewCount(): number {
+  return this.viewCount;
 }
 
   getDescription(): string {
@@ -230,6 +237,12 @@ export class Tour {
     const now = new Date();
     return this.startDates.some((date) => date > now);
   }
+
+  incrementViewCount(): void {
+    this.viewCount += 1;
+    this.updatedAt = new Date();
+  }
+
 
   getPricePerDay(): Money {
     return this.price.multiply(1 / this.duration);
