@@ -68,6 +68,7 @@ model Tour {
   // Ratings (calculated from reviews)
   ratingsAverage  Float    @default(0)
   ratingsQuantity Int      @default(0)
+  viewCount       Int      @default(0)
 
   // Timestamps
   createdAt       DateTime @default(now())
@@ -93,6 +94,7 @@ model Tour {
   @@index([difficulty])
   @@index([priceAmount])
   @@index([ratingsAverage])
+  @@index([viewCount])
   @@map("tours")
 }
 
