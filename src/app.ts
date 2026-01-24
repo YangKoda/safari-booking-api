@@ -12,6 +12,9 @@ import { inquiryRoutes } from 'presentation/routes/inquiryRoutes';
 import { authRoutes } from 'presentation/routes/authRoutes';
 import { authenticate } from '@presentation/middleware/authenticate';
 import { authorize } from '@presentation/middleware/authorize';
+import { uploadRoutes } from '@presentation/routes/uploadRoutes';
+
+
 
 const app: Application = express();
 
@@ -46,6 +49,7 @@ app.use('/api/v1/tours', tourRoutes);
 app.use('/api/v1/users', authenticate, authorize('admin'), userRoutes);
 app.use('/api/v1/inquiries', authenticate, inquiryRoutes);
 app.use('/api/v1/reviews', authenticate, reviewRoutes);
+app.use('/api/v1/upload', uploadRoutes);
 
 // 404 handler
 app.use((_req: Request, res: Response) => {
