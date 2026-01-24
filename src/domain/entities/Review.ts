@@ -7,6 +7,7 @@ export interface ReviewProps {
   userId: string;
   rating: Rating;
   comment: string;
+  images?: string[];
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -19,6 +20,7 @@ export class Review {
   private comment: string;
   private readonly createdAt: Date;
   private updatedAt: Date;
+  private images: string[];
 
   constructor(props: ReviewProps) {
     this.validate(props);
@@ -28,6 +30,7 @@ export class Review {
     this.userId = props.userId;
     this.rating = props.rating;
     this.comment = props.comment;
+    this.images = props.images || [];
     this.createdAt = props.createdAt || new Date();
     this.updatedAt = props.updatedAt || new Date();
   }
@@ -69,7 +72,7 @@ export class Review {
     return this.id;
   }
 
-  
+
 
   getTourId(): string {
     return this.tourId;
@@ -85,6 +88,10 @@ export class Review {
 
   getComment(): string {
     return this.comment;
+  }
+
+  getImages(): string[] {
+    return [...this.images];
   }
 
   getCreatedAt(): Date {
@@ -116,6 +123,24 @@ export class Review {
     this.updatedAt = new Date();
   }
 
+    // METHODS FOR IMAGES
+  addImages(imageUrls: string[]): void {
+    // Limit to 5 images per review
+    const totalImages = this.images.length + imageUrls.length;
+    if (totalImages > 5) {
+      throw new ValidationError('Review images limit exceeded', {
+        images: ['Maximum 5 images allowed per review'],
+      });
+    }
+    this.images = [...this.images, ...imageUrls];
+    this.updatedAt = new Date();
+  }
+
+  removeImage(imageUrl: string): void {
+    this.images = this.images.filter(url => url !== imageUrl);
+    this.updatedAt = new Date();
+  }
+  // helper methods
   isPositive(): boolean {
     return this.rating.getValue() >= 4;
   }
