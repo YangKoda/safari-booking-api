@@ -6,10 +6,18 @@ import { ImageProcessingService } from './ImageProcessingService';
 import Logger from '@shared/utils/logger';
 
 export class S3UploadService implements IFileUploadService {
-  private s3Client = S3Config.getClient();
-  private bucketName = S3Config.getBucketName();
-  private baseUrl = S3Config.getBaseUrl();
   private imageProcessor = new ImageProcessingService();
+
+  // Lazy load S3 client only when needed
+  private getClient() {
+    return S3Config.getClient();
+  }
+  private getBucketName() {
+    return S3Config.getBucketName()
+  }
+  private getBaseUrl() {
+    return S3Config.getBaseUrl();
+  }
 
   /**
    * Upload image to S3 with processing
@@ -29,20 +37,20 @@ export class S3UploadService implements IFileUploadService {
 
     // Upload to S3
     const command = new PutObjectCommand({
-      Bucket: this.bucketName,
+      Bucket: this.getBucketName(),
       Key: processed.key,
       Body: processed.buffer,
       ContentType: processed.mimetype,
       CacheControl: 'max-age=31536000', // 1 year cache
     });
 
-    await this.s3Client.send(command);
+    await this.getClient().send(command);
 
     Logger.info(`File uploaded to S3: ${processed.key}`);
 
     return {
       key: processed.key,
-      url: `${this.baseUrl}/${processed.key}`,
+      url: `${this.getBaseUrl()}/${processed.key}`,
       size: processed.size,
     };
   }
@@ -52,11 +60,11 @@ export class S3UploadService implements IFileUploadService {
    */
   async deleteFile(key: string): Promise<void> {
     const command = new DeleteObjectCommand({
-      Bucket: this.bucketName,
+      Bucket: this.getBucketName(),
       Key: key,
     });
 
-    await this.s3Client.send(command);
+    await this.getClient().send(command);
 
     Logger.info(`File deleted from S3: ${key}`);
   }
@@ -66,11 +74,11 @@ export class S3UploadService implements IFileUploadService {
    */
   async generateSignedUrl(key: string, expiresIn: number = 3600): Promise<string> {
     const command = new GetObjectCommand({
-      Bucket: this.bucketName,
+      Bucket: this.getBucketName(),
       Key: key,
     });
 
-    const signedUrl = await getSignedUrl(this.s3Client, command, {
+    const signedUrl = await getSignedUrl(this.getClient(), command, {
       expiresIn,
     });
 
