@@ -51,6 +51,9 @@ export class TourMapper {
       startDates: prisma.startDates.map((date) => new Date(date)),
       ratingsAverage: prisma.ratingsAverage || 0,
       ratingsQuantity: prisma.ratingsQuantity || 0,
+      viewCount: prisma.viewCount || 0,
+      createdAt: prisma.createdAt,
+      updatedAt: prisma.updatedAt,
     };
 
     return new Tour(tourProps);
@@ -85,6 +88,7 @@ export class TourMapper {
       imageCover: tour.getImageCover(),
       images: tour.getImages(),
       startDates: tour.getStartDates(),
+      viewCount: tour.getViewCount(),
     };
 
     const startLoc = tour.getStartLocation();
