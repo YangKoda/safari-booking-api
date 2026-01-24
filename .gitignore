@@ -31,5 +31,6 @@ coverage/
 prisma/migrations/
 
 PROJECT_ROADMAP.md
+PROJECT_ROADMAP20.md
 
 /src/generated/prisma
