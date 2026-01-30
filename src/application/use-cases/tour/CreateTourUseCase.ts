@@ -8,7 +8,7 @@ import { ValidationError } from '@shared/errors';
 export class CreateTourUseCase {
   constructor(private readonly tourRepository: ITourRepository) {}
 
-  async execute(dto: CreateTourDTO): Promise<TourResponseDTO> {
+  async execute(dto: CreateTourDTO): Promise<Tour> {
     // Validate DTO
     const validation = CreateTourDTOValidator.validate(dto);
     if (!validation.isValid) {
@@ -40,13 +40,14 @@ export class CreateTourUseCase {
     const savedTour = await this.tourRepository.save(tour);
 
     // Map to response DTO
-    return this.mapToResponseDTO(savedTour);
+    return savedTour;
   }
 
   private mapToResponseDTO(tour: Tour): TourResponseDTO {
     return {
       id: tour.getId()!,
       name: tour.getName(),
+      slug: tour.getSlug?.() || this.generateSlug(tour.getName()),
       description: tour.getDescription(),
       duration: tour.getDuration(),
       maxGroupSize: tour.getMaxGroupSize(),
@@ -64,6 +65,7 @@ export class CreateTourUseCase {
       guides: tour.getGuides(),
       ratingsAverage: tour.getRatingsAverage(),
       ratingsQuantity: tour.getRatingsQuantity(),
+      viewCount: tour.getViewCount?.() || 0,
       createdAt: tour.getCreatedAt().toISOString(),
       updatedAt: tour.getUpdatedAt().toISOString(),
     };

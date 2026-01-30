@@ -1,4 +1,4 @@
-import { TourResponseDTO } from './TourResponseDTO';
+import { Tour } from '@domain/entities/Tour';
 
 export interface SearchMetaDTO {
   total: number;
@@ -11,6 +11,6 @@ export interface SearchMetaDTO {
 
 export interface SearchToursResponseDTO {
   results: number;
-  data: TourResponseDTO[];
+  data: Tour[];
   meta: SearchMetaDTO;
 }

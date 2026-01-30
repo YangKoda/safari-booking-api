@@ -55,7 +55,23 @@ export class AuthController {
   login = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const useCase = new LoginUserUseCase(this.userRepository, this.passwordService);
-      const { user } = await useCase.execute(req.body);
+
+      // DTO mapping (clean contract)
+    const { emailOrUsername, email, username, password } = req.body;
+
+    const identifier = emailOrUsername ?? email ?? username;
+
+    if (!identifier || !password) {
+      res.status(400).json({
+        status: 'error',
+        message: 'emailOrUsername (or email/username) and password are required',
+      });
+      return;
+    }
+      const { user } = await useCase.execute({
+      emailOrUsername: identifier,
+      password,
+    });
 
       // Generate token pair
       const tokens = this.jwtService.generateTokenPair({

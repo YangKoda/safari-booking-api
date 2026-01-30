@@ -4,13 +4,15 @@ import { User } from '@domain/entities/User';
 import { Email } from '@domain/value-objects/Email';
 import { NotFoundError } from '@shared/errors';
 import { UserMapper } from '@infrastructure/database/repositories/mappers/UserMapper';
+import type { DomainUserRole } from '@domain/entities/User';
+
 
 
 /**
  * Domain roles:  'customer' | 'tour-guide' | 'admin'
  * Prisma roles:  USER | GUIDE | LEAD_GUIDE | ADMIN
  */
-function toPrismaRole(role: 'customer' | 'tour-guide' | 'admin'): PrismaUserRole {
+function toPrismaRole(role: DomainUserRole): PrismaUserRole {
   switch (role) {
     case 'customer':
       return PrismaUserRole.USER;
@@ -23,7 +25,7 @@ function toPrismaRole(role: 'customer' | 'tour-guide' | 'admin'): PrismaUserRole
   }
 }
 
-function toDomainRole(role: PrismaUserRole): 'customer' | 'tour-guide' | 'admin' {
+function toDomainRole(role: PrismaUserRole): DomainUserRole {
   switch (role) {
     case PrismaUserRole.ADMIN:
       return 'admin';
@@ -163,27 +165,12 @@ export class PrismaUserRepository implements IUserRepository {
     );
   }
 
-  async findByRole(role: 'customer' | 'tour-guide' | 'admin'): Promise<User[]> {
+  async findByRole(role: DomainUserRole): Promise<User[]> {
     const users = await this.prisma.user.findMany({
-      where: { role: toPrismaRole(role) },
-      orderBy: { createdAt: 'desc' },
+      where: { role: toPrismaRole(role)  },
     });
 
-    return users.map(
-      (u) =>
-        new User({
-          id: u.id,
-          name: u.name,
-          email: new Email(u.email),
-          password: u.password,
-          role: toDomainRole(u.role),
-          photo: u.photo ?? undefined,
-          phone: u.phone ?? undefined,
-          active: u.active,
-          createdAt: u.createdAt,
-          updatedAt: u.updatedAt,
-        })
-    );
+    return users.map(UserMapper.toDomain);
   }
 
   async findActiveUsers(): Promise<User[]> {
@@ -264,9 +251,9 @@ export class PrismaUserRepository implements IUserRepository {
     return this.prisma.user.count();
   }
 
-  async countByRole(role: 'customer' | 'tour-guide' | 'admin'): Promise<number> {
+  async countByRole(role: DomainUserRole): Promise<number> {
     return this.prisma.user.count({
-      where: { role: toPrismaRole(role) },
+      where: {  role: toPrismaRole(role)  },
     });
   }
 }

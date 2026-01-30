@@ -6,14 +6,14 @@ import { Tour } from '@domain/entities/Tour';
 export class GetTourUseCase {
   constructor(private readonly tourRepository: ITourRepository) {}
 
-  async execute(tourId: string): Promise<TourResponseDTO> {
+  async execute(tourId: string): Promise<Tour> {
     const tour = await this.tourRepository.findById(tourId);
 
     if (!tour) {
       throw new NotFoundError(`Tour with ID ${tourId} not found`);
     }
 
-    return this.mapToResponseDTO(tour);
+    return tour;
   }
 
   private mapToResponseDTO(tour: Tour): TourResponseDTO {

@@ -4,6 +4,7 @@ import { authenticate } from '@presentation/middleware/authenticate';
 import { authorize } from '@presentation/middleware/authorize';
 import { uploadSingle, uploadMultiple } from '@infrastructure/storage/MulterConfig';
 
+
 const router = Router();
 const uploadController = new UploadController();
 
@@ -34,5 +35,18 @@ router.post(
   uploadSingle,
   uploadController.uploadUserAvatar
 );
+
+/**
+ * Upload review images (multiple)
+ * POST /api/v1/upload/reviews/:reviewId/images
+ * Authorization: review owner only (checked in controller)
+ * Body: multipart/form-data with 'images' field (max 5 files)
+ */
+router.post(
+  '/reviews/:reviewId/images',
+  uploadMultiple,
+  uploadController.uploadReviewImages
+);
+
 
 export { router as uploadRoutes };

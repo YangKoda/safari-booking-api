@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '@shared/errors';
+import { DomainUserRole } from '@domain/entities/User';
+
 
 /**
  * Authorization Middleware Factory
@@ -13,7 +15,7 @@ import { AppError } from '@shared/errors';
  * router.delete('/tours/:id', authenticate, authorize('admin'), deleteTour);
  * router.post('/tours', authenticate, authorize('admin', 'tour-guide'), createTour);
  */
-export const authorize = (...roles: string[]) => {
+export const authorize = (...roles: DomainUserRole[]) => {
   return (req: Request, res: Response, next: NextFunction): void => {
     try {
       // Ensure user is authenticated (attached by authenticate middleware)
@@ -21,8 +23,20 @@ export const authorize = (...roles: string[]) => {
         throw new AppError('Authentication required', 401);
       }
 
+      // Safely get user role
+      if (!req.user.role) {
+        throw new AppError('User role not found', 401);
+      }
+
+      // Normalize role casing
+      const userRole = req.user.role as DomainUserRole;
+
+      // Debug
+      // console.log('AUTHORIZE allowed roles:', allowedRoles);
+      // console.log('AUTHORIZE req.user.role:', userRole);
+
       // Check if user's role is in the allowed roles
-      if (!roles.includes(req.user.role)) {
+      if (!roles.includes(userRole)) {
         throw new AppError('You do not have permission to perform this action', 403);
       }
 

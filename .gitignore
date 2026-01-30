@@ -10,6 +10,9 @@ build/
 .env.local
 .env.*.local
 
+# Temporary local debug scripts (not committed)
+scripts/
+
 # Logs
 *.log
 npm-debug.log*
@@ -30,7 +33,12 @@ coverage/
 # Prisma
 prisma/migrations/
 
+# Personal project roadmaps (not for public repository)
 PROJECT_ROADMAP.md
 PROJECT_ROADMAP20.md
+PROJECT_ROADMAP_WITH_PHASE_8.5.md
+
+# Auto-generated project structure
+project-structure.txt
 
 /src/generated/prisma

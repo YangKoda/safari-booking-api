@@ -5,9 +5,9 @@ import { Tour } from '@domain/entities/Tour';
 export class ListToursUseCase {
   constructor(private readonly tourRepository: ITourRepository) {}
 
-  async execute(): Promise<TourResponseDTO[]> {
+  async execute(): Promise<Tour[]> {
     const tours = await this.tourRepository.findAll();
-    return tours.map(tour => this.mapToResponseDTO(tour));
+    return this.tourRepository.findAll();
   }
 
   private mapToResponseDTO(tour: Tour): TourResponseDTO {

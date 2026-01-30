@@ -1,13 +1,22 @@
 import { ITourRepository } from '@domain/repositories/ITourRepository';
 import { SearchToursDTO } from '@application/dtos/tour/SearchToursDTO';
-import { SearchToursResponseDTO } from '@application/dtos/tour/SearchToursResponseDTO';
-import { TourResponseDTO } from '@application/dtos/tour/TourResponseDTO';
 import { Tour } from '@domain/entities/Tour';
 
 export class SearchToursUseCase {
   constructor(private readonly tourRepository: ITourRepository) {}
 
-  async execute(dto: SearchToursDTO): Promise<SearchToursResponseDTO> {
+  async execute(dto: SearchToursDTO): Promise<{
+    results: number;
+    data: Tour[];
+    meta: {
+      total: number;
+      page: number;
+      limit: number;
+      pages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+  }> {
     const page = dto.page && dto.page > 0 ? dto.page : 1;
     const limit = dto.limit && dto.limit > 0 ? dto.limit : 10;
 
@@ -39,7 +48,7 @@ export class SearchToursUseCase {
 
     return {
       results: tours.length,
-      data: tours.map((t) => this.mapToResponseDTO(t)),
+      data: tours,
       meta: {
         total,
         page,
@@ -48,32 +57,6 @@ export class SearchToursUseCase {
         hasNext: page < pages,
         hasPrev: page > 1,
       },
-    };
-  }
-
-  private mapToResponseDTO(tour: Tour): TourResponseDTO {
-    return {
-      id: tour.getId()!,
-      name: tour.getName(),
-      description: tour.getDescription(),
-      duration: tour.getDuration(),
-      maxGroupSize: tour.getMaxGroupSize(),
-      difficulty: tour.getDifficulty(),
-      price: {
-        amount: tour.getPrice().getAmount(),
-        currency: tour.getPrice().getCurrency(),
-      },
-      summary: tour.getSummary(),
-      imageCover: tour.getImageCover(),
-      images: tour.getImages(),
-      startDates: tour.getStartDates().map((date) => date.toISOString()),
-      startLocation: tour.getStartLocation(),
-      locations: tour.getLocations(),
-      guides: tour.getGuides(),
-      ratingsAverage: tour.getRatingsAverage(),
-      ratingsQuantity: tour.getRatingsQuantity(),
-      createdAt: tour.getCreatedAt().toISOString(),
-      updatedAt: tour.getUpdatedAt().toISOString(),
     };
   }
 }

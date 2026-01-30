@@ -51,7 +51,10 @@ app.use('/api/v1/users', authenticate, authorize('admin'), userRoutes);
 app.use('/api/v1/inquiries', authenticate, inquiryRoutes);
 app.use('/api/v1/reviews', authenticate, reviewRoutes);
 app.use('/api/v1/upload', uploadRoutes);
+
+//  Analytics (ADMIN-only)
 app.use('/api/v1/analytics', authenticate, authorize('admin'), analyticsRoutes);
+
 
 // 404 handler
 app.use((_req: Request, res: Response) => {

@@ -3,6 +3,7 @@ import { TourController } from '../controllers/TourController';
 import { authenticate } from '@presentation/middleware/authenticate';
 import { authorize } from '@presentation/middleware/authorize';
 
+
 const router = Router();
 const tourController = new TourController();
 
@@ -14,5 +15,8 @@ router.get('/:id', tourController.getTour);
 // PROTECTED ROUTES (only admins/tour-guides can create tours)
 router.post('/',authenticate, authorize('admin', 'tour-guide'),  tourController.createTour);
 
+router.patch('/:id', authenticate, authorize('admin', 'tour-guide'), tourController.updateTour);
+
+router.delete('/:id', authenticate,  authorize('admin'), tourController.deleteTour);
 
 export { router as tourRoutes };

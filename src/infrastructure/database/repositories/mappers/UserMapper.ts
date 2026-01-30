@@ -1,4 +1,4 @@
-import { User, UserProps, UserRole as DomainUserRole } from '@domain/entities/User';
+import { User, UserProps, DomainUserRole } from '@domain/entities/User';
 import { Email } from '@domain/value-objects/Email';
 import { User as PrismaUser, UserRole as PrismaUserRole } from '@prisma/client';
 

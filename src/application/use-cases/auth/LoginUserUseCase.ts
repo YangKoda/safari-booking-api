@@ -20,6 +20,11 @@ export class LoginUserUseCase {
   ) {}
 
   async execute(dto: LoginUserDTO): Promise<LoginResult> {
+
+  //  GUARD CLAUSE (prevents undefined.includes crash)
+  if (!dto.emailOrUsername || !dto.password) {
+      throw new AppError('emailOrUsername and password are required', 400);
+    }
     let user : User | null = null;
     // 1) Determine if input is email or username
     const isEmail = dto.emailOrUsername.includes('@');

@@ -1,7 +1,10 @@
+import { UserRole } from '@prisma/client';
+
+
 export interface UserResponseDTO {
   id: string;
   email: string;
   name: string;
-  role: 'customer' | 'admin';
+  role: UserRole;
   createdAt: string;
 }

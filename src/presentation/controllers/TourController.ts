@@ -8,9 +8,14 @@ import { ListToursUseCase } from '@application/use-cases/tour/ListToursUseCase';
 import { ValidationError } from '@shared/errors';
 import { SearchToursUseCase } from '@application/use-cases/tour/SearchToursUseCase';
 import { SearchToursDTO } from '@application/dtos/tour/SearchToursDTO';
+import { UpdateTourUseCase } from '@application/use-cases/tour/UpdateTourUseCase';
+import { DeleteTourUseCase } from '@application/use-cases/tour/DeleteTourUseCase';
+import { PrismaInquiryRepository } from '@infrastructure/database/repositories/implementations/PrismaInquiryRepository';
+import { TourResponseDTOMapper } from '@application/dtos/tour/TourResponseDTO';
 
 
 export class TourController {
+  private inquiryRepository = new PrismaInquiryRepository(prisma);
   private tourRepository: PrismaTourRepository;
 
   constructor() {
@@ -45,9 +50,13 @@ export class TourController {
       const useCase = new CreateTourUseCase(this.tourRepository);
       const result = await useCase.execute(dto);
 
+    const responseDTO = TourResponseDTOMapper.fromEntity(result);
+
       res.status(201).json({
         status: 'success',
-        data: result,
+        data: {
+            tour: responseDTO,
+          },
       });
     } catch (error) {
       next(error);
@@ -60,10 +69,12 @@ export class TourController {
 
       const useCase = new GetTourUseCase(this.tourRepository);
       const result = await useCase.execute(id);
-
+      const responseDTO = TourResponseDTOMapper.fromEntity(result);
       res.status(200).json({
         status: 'success',
-        data: result,
+        data:{
+          tour: responseDTO,
+        },
       });
     } catch (error) {
       next(error);
@@ -75,10 +86,12 @@ export class TourController {
       const useCase = new ListToursUseCase(this.tourRepository);
       const result = await useCase.execute();
 
+      const tours = result.map(TourResponseDTOMapper.fromEntity);
+
       res.status(200).json({
         status: 'success',
         results: result.length,
-        data: result,
+      data: { tours },
       });
     } catch (error) {
       next(error);
@@ -112,14 +125,65 @@ searchTours = async (req: Request, res: Response, next: NextFunction): Promise<v
     const useCase = new SearchToursUseCase(this.tourRepository);
     const result = await useCase.execute(dto);
 
+    const mappedTours = result.data.map(TourResponseDTOMapper.fromEntity);
+
+
     res.status(200).json({
       status: 'success',
       results: result.results,
       meta: result.meta,
-      data: result.data,
-    });
+      data: { tours: mappedTours },
+        });
   } catch (error) {
     next(error);
   }
 };
+
+
+  /**
+   * Update tour
+   * PATCH /api/v1/tours/:id
+   * Authorization: admin, tour-guide
+   */
+  updateTour = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const tourId = String(req.params.id);
+      const updateData = req.body;
+
+      const useCase = new UpdateTourUseCase(this.tourRepository);
+      const updatedTour = await useCase.execute(tourId, updateData);
+
+      const responseDTO = TourResponseDTOMapper.fromEntity(updatedTour);
+
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          tour: responseDTO,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  /**
+   * Delete tour
+   * DELETE /api/v1/tours/:id
+   * Authorization: admin only
+   */
+  deleteTour = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const tourId = String(req.params.id);
+
+      const useCase = new DeleteTourUseCase(this.tourRepository, this.inquiryRepository);
+      await useCase.execute(tourId);
+
+      res.status(204).send();
+    } catch (error) {
+      next(error);
+    }
+  };
+
+
 }

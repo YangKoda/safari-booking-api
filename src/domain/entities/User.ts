@@ -1,7 +1,8 @@
 import { Email } from '@domain/value-objects/Email';
 import { ValidationError } from '@shared/errors';
 
-export type UserRole = 'customer' | 'tour-guide' | 'admin';
+
+export type DomainUserRole  = 'customer' | 'tour-guide' | 'admin';
 
 export interface UserProps {
   id?: string;
@@ -9,7 +10,7 @@ export interface UserProps {
   email: Email;
   username?: string;
   password: string; // Hashed password
-  role: UserRole;
+  role: DomainUserRole ;
   photo?: string;
   phone?: string;
   active: boolean;
@@ -23,7 +24,7 @@ export class User {
   private name: string;
   private email: Email;
   private password: string;
-  private role: UserRole;
+  private role: DomainUserRole ;
   private photo?: string;
   private phone?: string;
   private active: boolean;
@@ -72,7 +73,7 @@ export class User {
     }
 
     // Role validation
-    const validRoles: UserRole[] = ['customer', 'tour-guide', 'admin'];
+    const validRoles: DomainUserRole [] = ['customer', 'tour-guide', 'admin'];
       if (!validRoles.includes(props.role)) {
       errors.role = ['Invalid role'];
       }
@@ -114,7 +115,7 @@ export class User {
     return this.password;
   }
 
-  getRole(): UserRole {
+  getRole(): DomainUserRole  {
     return this.role;
   }
 

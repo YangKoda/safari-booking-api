@@ -10,6 +10,7 @@ import { GetCustomerInsightsUseCase } from '@application/use-cases/analytics/Get
 import { GetGeographicAnalyticsUseCase } from '@application/use-cases/analytics/GetGeographicAnalyticsUseCase';
 import prisma from '@infrastructure/database/prisma';
 
+
 const router = Router();
 
 // Initialize repository
@@ -33,7 +34,7 @@ const analyticsController = new AnalyticsController(
 
 // All analytics routes require authentication and ADMIN role
 router.use(authenticate);
-router.use(authorize('ADMIN'));
+router.use(authorize('admin'));
 
 /**
  * @route   GET /api/v1/analytics/dashboard
