@@ -45,6 +45,7 @@ const startServer = async (): Promise<void> => {
       Logger.info(`  Users:  http://localhost:${config.port}/api/v1/users`);
       Logger.info(`  Inquiries:  http://localhost:${config.port}/api/v1/inquiries`);
       Logger.info(`  Reviews: http://localhost:${config.port}/api/v1/reviews`);
+      Logger.info(`  Upload:  http://localhost:${config.port}/api/v1/upload`);
     });
   } catch (error) {
     Logger.error('Failed to start server', error);

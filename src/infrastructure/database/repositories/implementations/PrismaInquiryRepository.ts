@@ -14,7 +14,7 @@ export class PrismaInquiryRepository implements IInquiryRepository {
   // Create
   // -------------------
   async save(inquiry: Inquiry): Promise<Inquiry> {
-    // ⚡ If inquiry has id, upsert; else create new record
+    // If inquiry has id, upsert; else create new record
     const id = inquiry.getId();
 
     const dateRange = inquiry.getPreferredDateRange();
@@ -170,4 +170,21 @@ export class PrismaInquiryRepository implements IInquiryRepository {
 
     return results.map((r) => InquiryMapper.toDomain(r));
   }
+  async findByTourIdAndStatuses(
+  tourId: string,
+  statuses: Array<'pending' | 'confirmed' | 'cancelled' | 'completed'>
+): Promise<Inquiry[]> {
+  const prismaStatuses = statuses.map((s) => s.toUpperCase() as PrismaInquiryStatus);
+
+  const results = await this.prisma.inquiry.findMany({
+    where: {
+      tourId,
+      status: { in: prismaStatuses },
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return results.map((r) => InquiryMapper.toDomain(r));
+}
+
 }

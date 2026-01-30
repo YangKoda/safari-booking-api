@@ -30,8 +30,10 @@ export interface TourProps {
   guides: string[]; // User IDs
   ratingsAverage?: number;
   ratingsQuantity?: number;
+  viewCount?: number;
   createdAt?: Date;
   updatedAt?: Date;
+  featured?: boolean;
 }
 
 export class Tour {
@@ -52,6 +54,8 @@ export class Tour {
   private guides: string[];
   private ratingsAverage: number;
   private ratingsQuantity: number;
+  private viewCount: number;
+  private featured: boolean;
   private readonly createdAt: Date;
   private updatedAt: Date;
 
@@ -75,6 +79,8 @@ export class Tour {
     this.guides = props.guides;
     this.ratingsAverage = props.ratingsAverage || 0;
     this.ratingsQuantity = props.ratingsQuantity || 0;
+    this.viewCount = props.viewCount || 0;
+    this.featured = props.featured || false;
     this.createdAt = props.createdAt || new Date();
     this.updatedAt = props.updatedAt || new Date();
   }
@@ -136,6 +142,10 @@ export class Tour {
   return this.slug;
 }
 
+getViewCount(): number {
+  return this.viewCount;
+}
+
   getDescription(): string {
     return this.description;
   }
@@ -184,6 +194,12 @@ export class Tour {
     return [...this.locations];
   }
 
+  getFeatured(): boolean {
+    return this.featured;
+  }
+
+
+
   getGuides(): string[] {
     return [...this.guides];
   }
@@ -202,6 +218,10 @@ export class Tour {
 
   getUpdatedAt(): Date {
     return new Date(this.updatedAt);
+  }
+
+  getPricePerDay(): Money {
+    return this.price.multiply(1 / this.duration);
   }
 
   // Business methods
@@ -231,7 +251,128 @@ export class Tour {
     return this.startDates.some((date) => date > now);
   }
 
-  getPricePerDay(): Money {
-    return this.price.multiply(1 / this.duration);
+  incrementViewCount(): void {
+    this.viewCount += 1;
+    this.updatedAt = new Date();
   }
+
+    updateName(name: string): void {
+    if (!name || name.trim().length === 0) {
+      throw new ValidationError('Tour name cannot be empty', {
+        name: ['Tour name cannot be empty'],
+      });
+    }
+
+    if (name.trim().length < 3) {
+      throw new ValidationError('Tour name too short', {
+        name: ['Tour name must be at least 3 characters'],
+      });
+    }
+
+    this.name = name.trim();
+    this.updatedAt = new Date();
+  }
+
+  updateLocation(location: string): void {
+    if (!location || location.trim().length === 0) {
+      throw new ValidationError('Tour location cannot be empty', {
+        location: ['Tour location cannot be empty'],
+      });
+    }
+
+    this.startLocation = {
+      ...this.startLocation,
+      description: location.trim(),
+    };
+
+    this.updatedAt = new Date();
+  }
+
+  updateDescription(description: string): void {
+    if (!description || description.trim().length === 0) {
+      throw new ValidationError('Tour description cannot be empty', {
+        description: ['Tour description cannot be empty'],
+      });
+    }
+
+    if (description.trim().length < 10) {
+      throw new ValidationError('Description too short', {
+        description: ['Description must be at least 10 characters'],
+      });
+    }
+
+    this.description = description.trim();
+    this.updatedAt = new Date();
+  }
+
+    updateSummary(summary: string): void {
+    if (!summary || summary.trim().length === 0) {
+      throw new ValidationError('Summary cannot be empty', {
+        summary: ['Summary cannot be empty'],
+      });
+    }
+
+    this.summary = summary.trim();
+    this.updatedAt = new Date();
+  }
+
+    updateDuration(duration: number): void {
+    if (duration <= 0) {
+      throw new ValidationError('Tour duration must be greater than 0', {
+        duration: ['Duration must be greater than 0'],
+      });
+    }
+
+    this.duration = duration;
+    this.updatedAt = new Date();
+  }
+
+  updateDifficulty(difficulty: TourDifficulty): void {
+    this.difficulty = difficulty;
+    this.updatedAt = new Date();
+  }
+
+    updateMaxGroupSize(maxGroupSize: number): void {
+    if (maxGroupSize <= 0) {
+      throw new ValidationError('Max group size must be greater than 0', {
+        maxGroupSize: ['Max group size must be greater than 0'],
+      });
+    }
+
+    this.maxGroupSize = maxGroupSize;
+    this.updatedAt = new Date();
+  }
+
+
+  updateImages(images: string[]): void {
+    this.images = images;
+    this.updatedAt = new Date();
+  }
+
+    updateStartDates(startDates: Date[]): void {
+      if (!startDates || startDates.length === 0) {
+        throw new ValidationError('At least one start date is required', {
+          startDates: ['At least one start date is required'],
+        });
+      }
+
+    const now = new Date();
+    const hasPast = startDates.some((d) => d < now);
+
+    if (hasPast) {
+      throw new ValidationError('Start dates cannot include past dates', {
+        startDates: ['All start dates must be in the future'],
+      });
+    }
+
+    this.startDates = startDates;
+    this.updatedAt = new Date();
+  }
+
+    updateFeatured(featured: boolean): void {
+      this.featured = featured;
+      this.updatedAt = new Date();
+    }
+
+
 }

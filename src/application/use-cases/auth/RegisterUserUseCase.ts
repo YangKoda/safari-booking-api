@@ -2,15 +2,16 @@ import { IUserRepository } from '@domain/repositories/IUserRepository';
 import { PasswordService } from '@domain/services/PasswordService';
 import { User } from '@domain/entities/User';
 import { Email } from '@domain/value-objects/Email';
-import { ValidationError } from '@shared/errors';
-import type { UserRole } from '@domain/entities/User';
+import { AppError, ValidationError } from '@shared/errors';
+import type { DomainUserRole } from '@domain/entities/User';
 
 export interface RegisterUserDTO {
   name: string;
   email: string;
+  username?: string;
   password: string;
   passwordConfirm: string;
-  role?: 'customer' | 'tour-guide'; // Only allow customer/tour-guide registration (not admin)
+  role?: DomainUserRole; // allow USER or GUIDE registration only
   phone?: string;
 }
 
@@ -40,14 +41,32 @@ export class RegisterUserUseCase {
       });
     }
 
+        // Check if username already exists (if provided)
+    if (dto.username) {
+      const existingUserByUsername = await this.userRepository.findByUsername(dto.username);
+      if (existingUserByUsername) {
+        throw new ValidationError('Registration failed', {
+          username: ['Username already taken'],
+        });
+      }
+    }
+
     // Hash password
     const hashedPassword = await this.passwordService.hash(dto.password);
 
     // Create user with proper role type
-    const userRole: UserRole = dto.role || 'customer';
+    const userRole: DomainUserRole = dto.role ?? 'customer';
+    const allowedRoles: DomainUserRole[] = ['customer', 'tour-guide'];
+
+
+if (dto.role && !allowedRoles.includes(dto.role)) {
+  throw new AppError('You cannot register this role.', 403);
+}
+
     const user = new User({
       name: dto.name,
       email,
+      username: dto.username,
       password: hashedPassword,
       role: userRole,
       phone: dto.phone,

@@ -5,7 +5,7 @@ import { AppError } from '@shared/errors';
 import { User } from '@domain/entities/User';
 
 export interface LoginUserDTO {
-  email: string;
+  emailOrUsername: string;
   password: string;
 }
 
@@ -20,19 +20,36 @@ export class LoginUserUseCase {
   ) {}
 
   async execute(dto: LoginUserDTO): Promise<LoginResult> {
-    // 1) Find user by email (Email VO validates the format)
-    const email = new Email(dto.email);
-    const user = await this.userRepository.findByEmail(email);
+
+  //  GUARD CLAUSE (prevents undefined.includes crash)
+  if (!dto.emailOrUsername || !dto.password) {
+      throw new AppError('emailOrUsername and password are required', 400);
+    }
+    let user : User | null = null;
+    // 1) Determine if input is email or username
+    const isEmail = dto.emailOrUsername.includes('@');
+
+    if (isEmail) {
+      // Try to find by email
+      const email = new Email(dto.emailOrUsername);
+      user = await this.userRepository.findByEmail(email);
+    } else {
+      // Try to find by username
+      user = await this.userRepository.findByUsername(dto.emailOrUsername);
+    }
 
     // 2) Ensure user exists
     if (!user) {
-      throw new AppError('Incorrect email or password', 401);
+      throw new AppError('Incorrect email/username or password', 401);
     }
 
     // 3) Compare password (plain vs hashed)
-    const passwordMatches = await this.passwordService.compare(dto.password, user.getPassword());
+    const passwordMatches = await this.passwordService.compare(
+      dto.password,
+      user.getPassword()
+    );
     if (!passwordMatches) {
-      throw new AppError('Incorrect email or password', 401);
+      throw new AppError('Incorrect email/username or password', 401);
     }
 
     // 4) Ensure account is active

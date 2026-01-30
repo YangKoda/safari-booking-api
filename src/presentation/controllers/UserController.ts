@@ -2,10 +2,11 @@ import { Request, Response, NextFunction } from 'express';
 import { PrismaUserRepository } from '@infrastructure/database/repositories/implementations/PrismaUserRepository';
 import { CreateUserDTO, CreateUserDTOValidator } from '@application/dtos/user/CreateUserDTO';
 import { ValidationError } from '@shared/errors';
-import { User } from '@domain/entities/User';
+import { User, DomainUserRole } from '@domain/entities/User';
 import { Email } from '@domain/value-objects/Email';
 import * as bcrypt from 'bcrypt';
 import { prisma } from '@infrastructure/database/prisma-client';
+
 
 export class UserController {
   private userRepository: PrismaUserRepository;
@@ -19,7 +20,7 @@ constructor() {
       const dto: CreateUserDTO = {
         email: req.body.email,
         name: req.body.name,
-        role: req.body.role,
+        role: req.body.role as DomainUserRole,
       };
 
       // Validate DTO at presentation boundary

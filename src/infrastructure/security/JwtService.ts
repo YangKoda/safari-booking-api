@@ -1,13 +1,15 @@
 import jwt from 'jsonwebtoken';
 import { config } from '@infrastructure/config/env';
 import { AppError } from '@shared/errors';
-import type { SignOptions } from 'jsonwebtoken';
+import type { DomainUserRole } from '@domain/entities/User';
+
+
 
 
 export interface JwtPayload {
   userId: string;
   email: string;
-  role: string;
+  role: DomainUserRole;
   iat?: number;
   exp?: number;
 }

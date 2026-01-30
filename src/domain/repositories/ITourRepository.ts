@@ -20,4 +20,25 @@ export interface ITourRepository {
   // Aggregations
   countTours(): Promise<number>;
   findTopRated(limit: number): Promise<Tour[]>;
+
+  search(dto: {
+  query?: string;
+  difficulty?: 'easy' | 'medium' | 'difficult';
+  minPrice?: number;
+  maxPrice?: number;
+  minDuration?: number;
+  maxDuration?: number;
+  maxGroupSize?: number;
+  minRatingsAverage?: number;
+  startDateFrom?: Date;
+  startDateTo?: Date;
+  location?: string;
+  page: number;
+  limit: number;
+  sortBy: 'createdAt' | 'priceAmount' | 'ratingsAverage' | 'duration';
+  order: 'asc' | 'desc';
+}): Promise<{ tours: Tour[]; total: number }>;
+
 }
+
+

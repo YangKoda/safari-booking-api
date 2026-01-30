@@ -68,6 +68,7 @@ model Tour {
   // Ratings (calculated from reviews)
   ratingsAverage  Float    @default(0)
   ratingsQuantity Int      @default(0)
+  viewCount       Int      @default(0)
 
   // Timestamps
   createdAt       DateTime @default(now())
@@ -93,6 +94,7 @@ model Tour {
   @@index([difficulty])
   @@index([priceAmount])
   @@index([ratingsAverage])
+  @@index([viewCount])
   @@map("tours")
 }
 
@@ -152,7 +154,8 @@ model User {
   id            String   @id @default(uuid())
   name          String
   email         String   @unique
-  phone             String?
+  username      String?   @unique
+  phone         String?
   role          UserRole @default(USER)
   password      String   // Will be hashed
   photo         String?
@@ -160,6 +163,8 @@ model User {
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  passwordChangedAt DateTime?
+
 
   // Relations
   tourGuides    TourGuide[]
@@ -221,6 +226,7 @@ model Review {
 
   rating    Int      // 1-5 stars
   comment   String   @db.Text
+  images    String[]
 
   // Relations
   tourId    String

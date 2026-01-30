@@ -51,6 +51,9 @@ export class TourMapper {
       startDates: prisma.startDates.map((date) => new Date(date)),
       ratingsAverage: prisma.ratingsAverage || 0,
       ratingsQuantity: prisma.ratingsQuantity || 0,
+      viewCount: prisma.viewCount || 0,
+      createdAt: prisma.createdAt,
+      updatedAt: prisma.updatedAt,
     };
 
     return new Tour(tourProps);
@@ -59,11 +62,11 @@ export class TourMapper {
   /**
    * Convert Domain Tour entity to Prisma Tour data
    */
-  static toPrisma(tour: Tour): {
-    tour: Omit<PrismaTour, 'createdAt' | 'updatedAt'>;
-    startLocation: Omit<PrismaTourLocation, 'id' | 'createdAt' | 'updatedAt'>;
-    locations: Omit<PrismaTourLocation, 'id' | 'createdAt' | 'updatedAt'>[];
-  } {
+static toPrisma(tour: Tour): {
+  tour: Omit<PrismaTour, 'createdAt' | 'updatedAt'>;
+  startLocation: Prisma.TourLocationCreateWithoutTourInput;
+  locations: Prisma.TourLocationCreateWithoutTourInput[];
+} {
     const tourId = tour.getId();
     if (!tourId) {
       throw new Error('Tour ID is required for Prisma conversion');
@@ -85,29 +88,27 @@ export class TourMapper {
       imageCover: tour.getImageCover(),
       images: tour.getImages(),
       startDates: tour.getStartDates(),
+      viewCount: tour.getViewCount(),
     };
 
     const startLoc = tour.getStartLocation();
-    const startLocationData: Omit<PrismaTourLocation, 'id' | 'createdAt' | 'updatedAt'> = {
+    const startLocationData: Prisma.TourLocationCreateWithoutTourInput = {
       description: startLoc.description,
       address: null,
       longitude: startLoc.coordinates[0],
       latitude: startLoc.coordinates[1],
       day: null,
-      tourId: tourId,
-      startTourId: tourId,
-    };
+    startTour: {
+      connect: { id: tourId },
+  },
+};
 
-    const locationsData: Omit<PrismaTourLocation, 'id' | 'createdAt' | 'updatedAt'>[] = tour
-      .getLocations()
-      .map((loc) => ({
+    const locationsData: Prisma.TourLocationCreateWithoutTourInput[] = tour.getLocations().map((loc) => ({
         description: loc.description,
         address: null,
         longitude: loc.coordinates[0],
         latitude: loc.coordinates[1],
         day: loc.day,
-        tourId: tourId,
-        startTourId: null,
       }));
 
     return {

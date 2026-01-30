@@ -21,4 +21,5 @@ export interface IInquiryRepository {
   countInquiries(): Promise<number>;
   countByStatus(status: 'pending' | 'confirmed' | 'cancelled' | 'completed'): Promise<number>;
   findUpcoming(): Promise<Inquiry[]>;
+  findByTourIdAndStatuses( tourId: string, statuses: Array<'pending' | 'confirmed' | 'cancelled' | 'completed'>): Promise<Inquiry[]>;
 }

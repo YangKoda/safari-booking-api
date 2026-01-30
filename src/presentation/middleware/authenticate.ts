@@ -3,6 +3,8 @@ import { JwtService, JwtPayload } from '@infrastructure/security/JwtService';
 import { PrismaUserRepository } from '@infrastructure/database/repositories/implementations/PrismaUserRepository';
 import { prisma } from '@infrastructure/database/prisma-client';
 import { AppError } from '@shared/errors';
+import type { DomainUserRole } from '@domain/entities/User';
+
 
 // Extend Express Request to include user
 declare global {
@@ -11,7 +13,7 @@ declare global {
       user?: {
         id: string;
         email: string;
-        role: string;
+        role: DomainUserRole;
       };
     }
   }
@@ -62,11 +64,17 @@ export const authenticate = async (
       }
     }
 
+    console.log("AUTH MIDDLEWARE user.getRole():", user.getRole());
+    console.log("AUTH MIDDLEWARE decoded.role:", decoded.role);
+
+
+
     // 6) Grant access - attach user to request
     req.user = {
       id: user.getId()!,
       email: user.getEmail().getValue(),
       role: user.getRole(),
+
     };
 
     next();

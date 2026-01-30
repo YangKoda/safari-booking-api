@@ -8,6 +8,7 @@ export class ReviewMapper {
       id: prisma.id,
       rating: new Rating(prisma.rating),
       comment: prisma.comment,
+      images: prisma.images || [],
       tourId: prisma.tourId,
       userId: prisma.userId,
       createdAt: prisma.createdAt,
@@ -25,6 +26,7 @@ export class ReviewMapper {
       id: reviewId,
       rating: review.getRating().getValue(),
       comment: review.getComment(),
+      images: review.getImages(),
       tourId: review.getTourId(),
       userId: review.getUserId(),
     };

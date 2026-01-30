@@ -1,14 +1,16 @@
 import { Email } from '@domain/value-objects/Email';
 import { ValidationError } from '@shared/errors';
 
-export type UserRole = 'customer' | 'tour-guide' | 'admin';
+
+export type DomainUserRole  = 'customer' | 'tour-guide' | 'admin';
 
 export interface UserProps {
   id?: string;
   name: string;
   email: Email;
+  username?: string;
   password: string; // Hashed password
-  role: UserRole;
+  role: DomainUserRole ;
   photo?: string;
   phone?: string;
   active: boolean;
@@ -22,13 +24,14 @@ export class User {
   private name: string;
   private email: Email;
   private password: string;
-  private role: UserRole;
+  private role: DomainUserRole ;
   private photo?: string;
   private phone?: string;
   private active: boolean;
   private readonly createdAt: Date;
   private updatedAt: Date;
   private passwordChangedAt?: Date;
+  private username?: string;
 
   constructor(props: UserProps) {
     this.validate(props);
@@ -44,6 +47,7 @@ export class User {
     this.createdAt = props.createdAt || new Date();
     this.updatedAt = props.updatedAt || new Date();
     this.passwordChangedAt = props.passwordChangedAt;
+    this.username = props.username;
   }
 
   private validate(props: UserProps): void {
@@ -69,10 +73,21 @@ export class User {
     }
 
     // Role validation
-    const validRoles: UserRole[] = ['customer', 'tour-guide', 'admin'];
+    const validRoles: DomainUserRole [] = ['customer', 'tour-guide', 'admin'];
       if (!validRoles.includes(props.role)) {
       errors.role = ['Invalid role'];
       }
+
+    // Username validation
+    if (props.username !== undefined) {
+      if (props.username.length < 3) {
+        errors.username = ['Username must be at least 3 characters'];
+      } else if (props.username.length > 30) {
+        errors.username = ['Username must not exceed 30 characters'];
+      } else if (!/^[a-zA-Z0-9_]+$/.test(props.username)) {
+        errors.username = ['Username can only contain letters, numbers, and underscores'];
+      }
+    }
 
     if (Object.keys(errors).length > 0) {
       throw new ValidationError('User validation failed', errors);
@@ -92,11 +107,15 @@ export class User {
     return this.email;
   }
 
+  getUsername(): string | undefined {
+    return this.username;
+  }
+
   getPassword(): string {
     return this.password;
   }
 
-  getRole(): UserRole {
+  getRole(): DomainUserRole  {
     return this.role;
   }
 
@@ -140,6 +159,21 @@ export class User {
     this.updatedAt = new Date();
   }
 
+    updateUsername(newUsername: string): void {
+    if (newUsername.length < 3 || newUsername.length > 30) {
+      throw new ValidationError('Invalid username', {
+        username: ['Username must be between 3 and 30 characters'],
+      });
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(newUsername)) {
+      throw new ValidationError('Invalid username', {
+        username: ['Username can only contain letters, numbers, and underscores'],
+      });
+    }
+    this.username = newUsername;
+    this.updatedAt = new Date();
+  }
+
   updatePassword(newHashedPassword: string): void {
     if (!newHashedPassword || newHashedPassword.length === 0) {
       throw new ValidationError('Invalid password', {
@@ -150,6 +184,25 @@ export class User {
     this.passwordChangedAt = new Date();
     this.updatedAt = new Date();
   }
+
+  updatePhone(newPhone: string): void {
+  // allow clearing
+  if (newPhone.trim() === '') {
+    this.phone = undefined;
+    this.updatedAt = new Date();
+    return;
+  }
+
+  if (newPhone.length < 7 || newPhone.length > 20) {
+    throw new ValidationError('Invalid phone', {
+      phone: ['Phone must be between 7 and 20 characters'],
+    });
+  }
+
+  this.phone = newPhone;
+  this.updatedAt = new Date();
+}
+
 
   updatePhoto(photoUrl: string): void {
     this.photo = photoUrl;

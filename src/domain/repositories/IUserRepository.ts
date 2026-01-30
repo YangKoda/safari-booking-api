@@ -1,5 +1,7 @@
 import { User } from '@domain/entities/User';
 import { Email } from '@domain/value-objects/Email';
+import type { DomainUserRole } from '@domain/entities/User';
+
 
 export interface IUserRepository {
   // Create
@@ -8,8 +10,9 @@ export interface IUserRepository {
   // Read
   findById(id: string): Promise<User | null>;
   findByEmail(email: Email): Promise<User | null>;
+  findByUsername(username: string): Promise<User | null>;
   findAll(): Promise<User[]>;
-  findByRole(role: 'customer' | 'tour-guide' | 'admin'): Promise<User[]>;
+  findByRole(role: DomainUserRole): Promise<User[]>;
   findActiveUsers(): Promise<User[]>;
 
   // Update
@@ -20,5 +23,5 @@ export interface IUserRepository {
 
   // Aggregations
   countUsers(): Promise<number>;
-  countByRole(role: 'customer' | 'tour-guide' | 'admin'): Promise<number>;
+  countByRole(role: DomainUserRole): Promise<number>;
 }

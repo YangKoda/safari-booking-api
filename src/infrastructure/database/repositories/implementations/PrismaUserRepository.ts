@@ -3,12 +3,16 @@ import { IUserRepository } from '@domain/repositories/IUserRepository';
 import { User } from '@domain/entities/User';
 import { Email } from '@domain/value-objects/Email';
 import { NotFoundError } from '@shared/errors';
+import { UserMapper } from '@infrastructure/database/repositories/mappers/UserMapper';
+import type { DomainUserRole } from '@domain/entities/User';
+
+
 
 /**
  * Domain roles:  'customer' | 'tour-guide' | 'admin'
  * Prisma roles:  USER | GUIDE | LEAD_GUIDE | ADMIN
  */
-function toPrismaRole(role: 'customer' | 'tour-guide' | 'admin'): PrismaUserRole {
+function toPrismaRole(role: DomainUserRole): PrismaUserRole {
   switch (role) {
     case 'customer':
       return PrismaUserRole.USER;
@@ -21,7 +25,7 @@ function toPrismaRole(role: 'customer' | 'tour-guide' | 'admin'): PrismaUserRole
   }
 }
 
-function toDomainRole(role: PrismaUserRole): 'customer' | 'tour-guide' | 'admin' {
+function toDomainRole(role: PrismaUserRole): DomainUserRole {
   switch (role) {
     case PrismaUserRole.ADMIN:
       return 'admin';
@@ -49,6 +53,7 @@ export class PrismaUserRepository implements IUserRepository {
     const data = {
       name: user.getName(),
       email: emailStr,
+      username: user.getUsername() || null,
       password: user.getPassword(),
       role: toPrismaRole(user.getRole()),
       photo: user.getPhoto() ?? null,
@@ -70,6 +75,7 @@ export class PrismaUserRepository implements IUserRepository {
       id: saved.id,
       name: saved.name,
       email: new Email(saved.email),
+      username: saved.username || undefined,
       password: saved.password,
       role: toDomainRole(saved.role),
       photo: saved.photo ?? undefined,
@@ -77,6 +83,7 @@ export class PrismaUserRepository implements IUserRepository {
       active: saved.active,
       createdAt: saved.createdAt,
       updatedAt: saved.updatedAt,
+      passwordChangedAt: saved.passwordChangedAt ?? undefined,
     });
   }
 
@@ -91,6 +98,7 @@ export class PrismaUserRepository implements IUserRepository {
       id: u.id,
       name: u.name,
       email: new Email(u.email),
+      username: u.username || undefined,
       password: u.password,
       role: toDomainRole(u.role),
       photo: u.photo ?? undefined,
@@ -98,6 +106,7 @@ export class PrismaUserRepository implements IUserRepository {
       active: u.active,
       createdAt: u.createdAt,
       updatedAt: u.updatedAt,
+      passwordChangedAt: u.passwordChangedAt ?? undefined,
     });
   }
 
@@ -118,8 +127,21 @@ export class PrismaUserRepository implements IUserRepository {
       active: u.active,
       createdAt: u.createdAt,
       updatedAt: u.updatedAt,
+      passwordChangedAt: u.passwordChangedAt ?? undefined,
     });
   }
+
+  async findByUsername(username: string): Promise<User | null> {
+  const prismaUser = await this.prisma.user.findUnique({
+    where: { username },
+  });
+
+  if (!prismaUser) {
+    return null;
+  }
+
+  return UserMapper.toDomain(prismaUser);
+}
 
   async findAll(): Promise<User[]> {
     const users = await this.prisma.user.findMany({
@@ -143,27 +165,12 @@ export class PrismaUserRepository implements IUserRepository {
     );
   }
 
-  async findByRole(role: 'customer' | 'tour-guide' | 'admin'): Promise<User[]> {
+  async findByRole(role: DomainUserRole): Promise<User[]> {
     const users = await this.prisma.user.findMany({
-      where: { role: toPrismaRole(role) },
-      orderBy: { createdAt: 'desc' },
+      where: { role: toPrismaRole(role)  },
     });
 
-    return users.map(
-      (u) =>
-        new User({
-          id: u.id,
-          name: u.name,
-          email: new Email(u.email),
-          password: u.password,
-          role: toDomainRole(u.role),
-          photo: u.photo ?? undefined,
-          phone: u.phone ?? undefined,
-          active: u.active,
-          createdAt: u.createdAt,
-          updatedAt: u.updatedAt,
-        })
-    );
+    return users.map(UserMapper.toDomain);
   }
 
   async findActiveUsers(): Promise<User[]> {
@@ -204,11 +211,13 @@ export class PrismaUserRepository implements IUserRepository {
       data: {
         name: user.getName(),
         email: user.getEmail().toString(),
+        username: user.getUsername() || null,
         password: user.getPassword(),
         role: toPrismaRole(user.getRole()),
         photo: user.getPhoto() ?? null,
         phone: user.getPhone() ?? null,
         active: user.isActive(),
+        passwordChangedAt: user.getPasswordChangedAt() ?? null,
       },
     });
 
@@ -216,6 +225,7 @@ export class PrismaUserRepository implements IUserRepository {
       id: updated.id,
       name: updated.name,
       email: new Email(updated.email),
+      username: updated.username || undefined,
       password: updated.password,
       role: toDomainRole(updated.role),
       photo: updated.photo ?? undefined,
@@ -223,6 +233,7 @@ export class PrismaUserRepository implements IUserRepository {
       active: updated.active,
       createdAt: updated.createdAt,
       updatedAt: updated.updatedAt,
+      passwordChangedAt: updated.passwordChangedAt ?? undefined,
     });
   }
 
@@ -240,9 +251,9 @@ export class PrismaUserRepository implements IUserRepository {
     return this.prisma.user.count();
   }
 
-  async countByRole(role: 'customer' | 'tour-guide' | 'admin'): Promise<number> {
+  async countByRole(role: DomainUserRole): Promise<number> {
     return this.prisma.user.count({
-      where: { role: toPrismaRole(role) },
+      where: {  role: toPrismaRole(role)  },
     });
   }
 }

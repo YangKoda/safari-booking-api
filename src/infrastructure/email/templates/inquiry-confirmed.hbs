@@ -1,0 +1,37 @@
+<h2 style="margin:0 0 12px;">Inquiry confirmed 🎉</h2>
+
+<p style="margin:0 0 12px;">
+  Hello <strong>{{customerName}}</strong>,
+</p>
+
+<p style="margin:0 0 16px;">
+  Great news — your inquiry has been <strong>confirmed</strong> for:
+  <strong>{{tourName}}</strong>.
+</p>
+
+<table cellpadding="0" cellspacing="0" style="width:100%; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:14px;">
+  <tr>
+    <td style="padding:6px 0;"><strong>Participants:</strong></td>
+    <td style="padding:6px 0;">{{participants}}</td>
+  </tr>
+  <tr>
+    <td style="padding:6px 0;"><strong>Dates:</strong></td>
+    <td style="padding:6px 0;">{{startDate}} → {{endDate}}</td>
+  </tr>
+  <tr>
+    <td style="padding:6px 0;"><strong>Total amount:</strong></td>
+    <td style="padding:6px 0;">{{currency}} {{totalPrice}}</td>
+  </tr>
+  <tr>
+    <td style="padding:6px 0;"><strong>Status:</strong></td>
+    <td style="padding:6px 0;">CONFIRMED</td>
+  </tr>
+</table>
+
+<p style="margin:16px 0 0;">
+  If you need any adjustments, reply to this email and our team will help.
+</p>
+
+<p style="margin:14px 0 0; color:#6b7280; font-size:13px;">
+  Inquiry ID: <code>{{inquiryId}}</code>
+</p>

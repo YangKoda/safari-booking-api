@@ -1,12 +1,17 @@
+import type { DomainUserRole } from '@domain/entities/User';
+
+
 export interface CreateUserDTO {
   email: string;
   name: string;
-  role: 'customer' | 'admin';
+  role: DomainUserRole;
 }
 
 export class CreateUserDTOValidator {
   static validate(dto: CreateUserDTO): { isValid: boolean; errors: Record<string, string[]> } {
     const errors: Record<string, string[]> = {};
+    const allowedRoles: DomainUserRole[] = ['customer', 'tour-guide', 'admin'];
+
 
     if (!dto.email || dto.email.trim().length === 0) {
       errors.email = ['Email is required'];
@@ -21,7 +26,7 @@ export class CreateUserDTOValidator {
       errors.name = ['Name is required'];
     }
 
-    if (!dto.role || !['customer', 'admin'].includes(dto.role)) {
+    if (!dto.role || !allowedRoles.includes(dto.role)) {
       errors.role = ['Role must be either "customer" or "admin"'];
     }
 
