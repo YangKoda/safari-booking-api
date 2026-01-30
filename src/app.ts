@@ -1,15 +1,15 @@
-import 'reflect-metadata';
+﻿import 'reflect-metadata';
 import express, { Application, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { config } from '@infrastructure/config/env';
-import { errorHandler } from '@infrastructure/web/middleware/errorHandler';
+import { errorHandler } from '@presentation/middleware/errorHandler';
 import Logger from '@shared/utils/logger';
-import { userRoutes } from 'presentation/routes/userRoutes';
-import { tourRoutes } from 'presentation/routes/tourRoutes';
-import { reviewRoutes } from 'presentation/routes/reviewRoutes';
-import { inquiryRoutes } from 'presentation/routes/inquiryRoutes';
-import { authRoutes } from 'presentation/routes/authRoutes';
+import { userRoutes } from '@presentation/routes/userRoutes';
+import { tourRoutes } from '@presentation/routes/tourRoutes';
+import { reviewRoutes } from '@presentation/routes/reviewRoutes';
+import { inquiryRoutes } from '@presentation/routes/inquiryRoutes';
+import { authRoutes } from '@presentation/routes/authRoutes';
 import { authenticate } from '@presentation/middleware/authenticate';
 import { authorize } from '@presentation/middleware/authorize';
 import { uploadRoutes } from '@presentation/routes/uploadRoutes';
@@ -68,3 +68,4 @@ app.use((_req: Request, res: Response) => {
 app.use(errorHandler);
 
 export default app;
+
